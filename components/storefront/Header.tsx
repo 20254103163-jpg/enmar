@@ -74,7 +74,7 @@ export default function StorefrontHeader() {
               {brandSub ? (
                 <span suppressHydrationWarning className="truncate">{brandSub}</span>
               ) : (
-                <span className="truncate">১০০% হাইজিনিক ও ঘরোয়া স্বাদের ফ্রোজেন রুটি, মোমো, রোল ও সিঙ্গারা • দ্রুত ডেলিভারি</span>
+                <span className="truncate">১০০% খাঁটি ও প্রাকৃতিক প্রিমিয়াম অর্গানিক খাদ্যপণ্য • দ্রুত হোম ডেলিভারি</span>
               )}
             </div>
 

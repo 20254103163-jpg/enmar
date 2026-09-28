@@ -142,8 +142,8 @@ export default function HeaderSearchBar({ isMobileOpen, onCloseMobile }: HeaderS
           }}
           placeholder={
             isBn
-              ? "ফ্রোজেন রুটি, চিকেন মোমো, স্প্রিং রোল, সিঙ্গারা খুঁজুন... (টাইপ করুন বা / চাপুন)"
-              : "Search frozen roti, chicken momo, spring rolls, shingara... (Press /)"
+              ? "খাঁটি মধু, গাওয়া ঘি, সরিষার তেল, মসলা খুঁজুন... (টাইপ করুন বা / চাপুন)"
+              : "Search pure honey, cow ghee, mustard oil, organic spices... (Press /)"
           }
           className="w-full pl-9 pr-10 py-2 sm:py-2.5 rounded-full bg-[#F8F6F2] hover:bg-stone-100 focus:bg-white text-xs sm:text-sm text-stone-900 placeholder:text-stone-400 border border-stone-200/90 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 transition-all outline-none shadow-2xs"
         />

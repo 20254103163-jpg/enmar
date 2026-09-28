@@ -42,18 +42,6 @@ const ComboDealsSlider = dynamic(
   () => import("@/components/storefront/ComboDealsSlider"),
   { ssr: false }
 );
-const CustomComboBuilder = dynamic(
-  () => import("@/components/storefront/CustomComboBuilder"),
-  { ssr: false }
-);
-const InteractiveCookingGuide = dynamic(
-  () => import("@/components/storefront/InteractiveCookingGuide"),
-  { ssr: false }
-);
-const PartySnackCalculator = dynamic(
-  () => import("@/components/storefront/PartySnackCalculator"),
-  { ssr: false }
-);
 
 function getCategoryEmoji(name: string): string {
   const n = (name || "").toLowerCase();
@@ -395,73 +383,64 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
           />
         )}
 
-        {/* 7. Build Your Own Custom Combo Box */}
-        <CustomComboBuilder />
-
-        {/* 8. Ready-to-Cook Quick Guide */}
-        <InteractiveCookingGuide />
-
-        {/* 9. Smart Party & Guest Snack Calculator */}
-        <PartySnackCalculator />
-
-        {/* 10. Why Choose ENMAR / Freshness Guarantee Section */}
+        {/* Why Choose ENMAR / Organic Guarantee Section */}
         <section className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6 py-2.5 sm:py-3.5">
           <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-stone-200/90 shadow-sm">
             <div className="text-center max-w-xl mx-auto space-y-1 mb-4">
               <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest text-forest bg-forest-soft px-2.5 py-0.5 rounded-full border border-forest/15">
                 <ShieldCheck className="w-3 h-3 text-forest" />
-                <span>{isBn ? "আমাদের অঙ্গীকার" : "Our Freshness Guarantee"}</span>
+                <span>{isBn ? "আমাদের অঙ্গীকার" : "Our Organic Guarantee"}</span>
               </span>
               <h2 className="text-sm sm:text-lg font-bold font-display text-stone-900">
-                {isBn ? "কেন ENMAR এর ফ্রোজেন খাবার সেরা?" : "Why Choose ENMAR Frozen Foods?"}
+                {isBn ? "কেন ENMAR এর অর্গানিক খাদ্যপণ্য সেরা?" : "Why Choose ENMAR Organic Products?"}
               </h2>
               <p className="text-[11px] sm:text-xs text-stone-600 leading-relaxed">
                 {isBn
-                  ? "১০০% ঘরোয়া পরিচ্ছন্নতায় তৈরি ও হিমায়িত, যাতে প্রতিটি কামড়ে পান তাজা ও আসল স্বাদ।"
-                  : "Prepared in 100% hygienic home kitchens and flash frozen for authentic taste."}
+                  ? "১০০% প্রাকৃতিক, কেমিক্যাল ও ভেজালমুক্ত পুষ্টিকর খাবার যা আপনার পরিবারের সুস্বাস্থ্য নিশ্চিত করে।"
+                  : "100% natural, chemical-free and nutrient-dense organic foods for your family's health."}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-3 sm:p-3.5 rounded-xl bg-[#FBF4EA] border border-stone-200/80 space-y-1.5 hover:-translate-y-0.5 transition-all">
                 <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-base shadow-xs">
-                  🌾
+                  🍯
                 </div>
                 <h3 className="font-bold font-display text-xs sm:text-sm text-stone-900">
-                  {isBn ? "১০০% খাঁটি লাল ও সাদা আটা" : "100% Pure Wheat Flour"}
+                  {isBn ? "১০০% খাঁটি ও নির্ভেজাল পণ্য" : "100% Pure & Authentic"}
                 </h3>
                 <p className="text-[10.5px] sm:text-[11px] text-stone-600 leading-snug">
                   {isBn
-                    ? "কোনো ক্ষতিকর প্রিজারভেটিভ ছাড়া সম্পূর্ণ হাতে তৈরি নরম তুলতুলে রুটি।"
-                    : "No chemicals or preservatives. Hand-rolled for maximum softness."}
+                    ? "সুন্দরবনের কাঁচা মধু, খাঁটি গাওয়া ঘি ও কাঠের ঘানির সরিষার তেল কোনো প্রকার ভেজাল ছাড়াই সরাসরি সংগৃহীত।"
+                    : "Pure raw honey, bilona ghee and cold-pressed mustard oil sourced with complete purity."}
                 </p>
               </div>
 
               <div className="p-3 sm:p-3.5 rounded-xl bg-[#FBF4EA] border border-stone-200/80 space-y-1.5 hover:-translate-y-0.5 transition-all">
                 <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-base shadow-xs">
-                  🍗
+                  🌿
                 </div>
                 <h3 className="font-bold font-display text-xs sm:text-sm text-stone-900">
-                  {isBn ? "জুসি ফ্রেশ চিকেন ও খাঁটি মসলা" : "Fresh Chicken & Pure Spices"}
+                  {isBn ? "প্রাকৃতিক ও কেমিক্যালমুক্ত" : "Natural & Chemical Free"}
                 </h3>
                 <p className="text-[10.5px] sm:text-[11px] text-stone-600 leading-snug">
                   {isBn
-                    ? "চিকেন মোমো ও রোলে ব্যবহৃত হয় তাজা ব্রয়লার-মুক্ত চিকেন কিমা ও প্রিমিয়াম মসলা।"
-                    : "Packed with juicy minced chicken and rich aromatic natural spices."}
+                    ? "কোনো ক্ষতিকর প্রিজারভেটিভ বা কৃত্রিম উপাদান ছাড়া স্বাস্থ্যকর পুষ্টির শতভাগ নিশ্চয়তা।"
+                    : "No artificial preservatives or chemicals. Sourced directly from verified organic origins."}
                 </p>
               </div>
 
               <div className="p-3 sm:p-3.5 rounded-xl bg-[#FBF4EA] border border-stone-200/80 space-y-1.5 hover:-translate-y-0.5 transition-all">
                 <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-base shadow-xs">
-                  ❄️
+                  🛡️
                 </div>
                 <h3 className="font-bold font-display text-xs sm:text-sm text-stone-900">
-                  {isBn ? "ইন্ডিভিজুয়াল ডিপ-ফ্রোজেন প্রযুক্তি" : "Flash-Freeze Technology"}
+                  {isBn ? "সুরক্ষিত ফুড-গ্রেড প্যাকেজিং" : "Hygienic Safe Packaging"}
                 </h3>
                 <p className="text-[10.5px] sm:text-[11px] text-stone-600 leading-snug">
                   {isBn
-                    ? "প্রতিটি পিস আলাদাভাবে ডিপ-ফ্রোজেন করা থাকে, তাই ফ্রিজে একটিও জড়াবে না।"
-                    : "Individually frozen so pieces never stick together in the pack."}
+                    ? "ফুড-গ্রেড বোতল ও জারে নিখুঁতভাবে প্যাক করা হয় যাতে পণ্যের স্বাদ ও পুষ্টিগুণ পুরোপুরি অটুট থাকে।"
+                    : "Packaged in airtight food-grade jars ensuring maximum freshness, flavor and nutrition."}
                 </p>
               </div>
             </div>

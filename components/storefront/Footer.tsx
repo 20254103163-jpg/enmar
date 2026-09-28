@@ -56,8 +56,8 @@ export default function StorefrontFooter() {
 
             <p className="text-[11.5px] sm:text-xs text-stone-400 leading-relaxed max-w-sm">
               {isBn
-                ? "ঘরে তৈরি ১০০% খাঁটি ও স্বাস্থ্যসম্মত ফ্রোজেন খাবার। সকালের নাস্তায় নরম রুটি এবং বিকেলের ক্রিস্পি মোমো, রোল ও সিঙ্গারা — কোনো প্রিজারভেটিভ ছাড়াই পৌঁছে দিচ্ছি।"
-                : "Handmade, preservative-free frozen rotis, momos, spring rolls, and snacks delivered to your door."}
+                ? "১০০% খাঁটি ও প্রাকৃতিক প্রিমিয়াম অর্গানিক খাদ্যপণ্য। সুন্দরবনের কাঁচা মধু, খাঁটি গাওয়া ঘি, ঘানিভাঙা সরিষার তেল ও বাছাইকৃত পুষ্টিকর অর্গানিক পণ্য আপনার ঘরে পৌঁছে দিচ্ছি।"
+                : "100% pure and natural premium organic foods. Delivering raw honey, cow ghee, cold-pressed oils, and certified organic health foods to your doorstep."}
             </p>
 
             {settings.whatsappNumber && (
