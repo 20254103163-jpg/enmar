@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Plus, Edit2, Trash2, Layers, Loader2, Save, X, Leaf } from "lucide-react";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { getSafeImageUrl } from "@/lib/utils";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -186,7 +187,13 @@ export default function AdminCategoriesPage() {
                   <div className="w-12 h-12 rounded-2xl bg-forest-soft text-forest flex items-center justify-center font-bold text-lg overflow-hidden border border-line">
                     {cat.image ? (
                       <div className="relative w-full h-full rounded-2xl overflow-hidden bg-gradient-to-b from-stone-50 to-stone-100 flex items-center justify-center p-1">
-                        <Image src={cat.image} alt={cat.name} fill className="object-contain p-0.5 drop-shadow-xs" />
+                        <Image
+                          src={getSafeImageUrl(cat.image)}
+                          alt={cat.name}
+                          fill
+                          className="object-contain p-0.5 drop-shadow-xs"
+                          unoptimized={true}
+                        />
                       </div>
                     ) : (
                       <Leaf className="w-6 h-6 text-forest" />

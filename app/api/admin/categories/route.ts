@@ -44,10 +44,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
     }
 
-    let slug = slugify(name);
-    const existing = await prisma.category.findUnique({ where: { slug } });
-    if (existing) {
-      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    let baseSlug = slugify(name);
+    let slug = baseSlug;
+    let counter = 1;
+    while (await prisma.category.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${Date.now().toString(36).slice(-4)}${counter > 1 ? `-${counter}` : ""}`;
+      counter++;
     }
 
     const category = await prisma.category.create({

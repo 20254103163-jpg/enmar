@@ -67,12 +67,12 @@ export async function PUT(
 
     let slug = existing.slug;
     if (name && name !== existing.name) {
-      slug = slugify(name);
-      const duplicate = await prisma.product.findFirst({
-        where: { slug, id: { not: productId } },
-      });
-      if (duplicate) {
-        slug = `${slug}-${Date.now().toString().slice(-4)}`;
+      let baseSlug = slugify(name);
+      slug = baseSlug;
+      let counter = 1;
+      while (await prisma.product.findFirst({ where: { slug, id: { not: productId } } })) {
+        slug = `${baseSlug}-${Date.now().toString(36).slice(-4)}${counter > 1 ? `-${counter}` : ""}`;
+        counter++;
       }
     }
 

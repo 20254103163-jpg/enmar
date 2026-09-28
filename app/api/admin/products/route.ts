@@ -68,11 +68,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Product name and price are required." }, { status: 400 });
     }
 
-    let slug = slugify(name);
-    // Ensure slug uniqueness
-    const existing = await prisma.product.findUnique({ where: { slug } });
-    if (existing) {
-      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    let baseSlug = slugify(name);
+    let slug = baseSlug;
+    let counter = 1;
+    while (await prisma.product.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${Date.now().toString(36).slice(-4)}${counter > 1 ? `-${counter}` : ""}`;
+      counter++;
     }
 
     const resolvedUnitQty =

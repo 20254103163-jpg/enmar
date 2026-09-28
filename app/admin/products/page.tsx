@@ -461,7 +461,7 @@ export default function AdminProductsPage() {
                               alt={p.name}
                               fill
                               className="object-contain p-0.5"
-                              unoptimized={imageSrc.startsWith("/uploads/")}
+                              unoptimized={true}
                             />
                           </div>
                           <div className="min-w-0">

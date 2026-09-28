@@ -156,7 +156,7 @@ export default function ImageUploader({
                 fill
                 sizes="(max-width: 768px) 50vw, 20vw"
                 className="object-contain p-2 drop-shadow-xs"
-                unoptimized={url.startsWith("/uploads/")}
+                unoptimized={true}
               />
 
               {/* Cover Badge for first image */}

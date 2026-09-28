@@ -39,16 +39,23 @@ export function generateOrderNumber(): string {
 }
 
 /**
- * Generate SEO-friendly slug
+ * Generate SEO-friendly slug (Supports English, Bengali, and Unicode characters)
  */
 export function slugify(text: string): string {
-  return text
+  if (!text) return `item-${Date.now().toString(36)}`;
+  let slug = text
     .toString()
-    .toLowerCase()
     .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w\-]+/g, "")
-    .replace(/\-\-+/g, "-");
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s\-]/gu, "") // Keep Unicode letters, numbers, and hyphens
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  if (!slug || slug === "-") {
+    slug = `item-${Date.now().toString(36)}`;
+  }
+  return slug;
 }
 
 /**
@@ -58,15 +65,26 @@ export function getSafeImageUrl(
   url: any,
   fallback = "/placeholder.png"
 ): string {
-  if (!url || typeof url !== "string") return fallback;
+  if (!url) return fallback;
+
+  // Handle JavaScript array of URLs (e.g. from Prisma JSON column)
+  if (Array.isArray(url)) {
+    if (url.length === 0) return fallback;
+    return getSafeImageUrl(url[0], fallback);
+  }
+
+  if (typeof url !== "string") return fallback;
   const trimmed = url.trim();
   if (!trimmed || trimmed === "/assets/products/placeholder.jpg") return fallback;
+
+  // Handle data URIs as-is
+  if (trimmed.startsWith("data:image/")) return trimmed;
 
   // Handle accidental stringified JSON array e.g. '["/uploads/..."]'
   if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
     try {
       const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "string") {
+      if (Array.isArray(parsed) && parsed.length > 0) {
         return getSafeImageUrl(parsed[0], fallback);
       }
     } catch (e) {}
