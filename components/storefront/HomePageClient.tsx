@@ -30,7 +30,6 @@ import StorefrontFooter from "@/components/storefront/Footer";
 import HeroSlider from "@/components/storefront/HeroSlider";
 import ProductCard from "@/components/storefront/ProductCard";
 import { ProductCardSkeleton } from "@/components/storefront/ProductCardSkeleton";
-import MealTimeFilterBar from "@/components/storefront/MealTimeFilterBar";
 import { useLanguage } from "@/context/LanguageContext";
 import { setCachedHomeData } from "@/lib/storeCache";
 
@@ -62,7 +61,6 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
   const [data, setData] = useState<any>(initialData);
   const [loading, setLoading] = useState<boolean>(!initialData?.featuredProducts?.length);
   const [selectedCategoryTab, setSelectedCategoryTab] = useState<string>("all");
-  const [selectedMeal, setSelectedMeal] = useState<string>("all");
   const [quickViewProduct, setQuickViewProduct] = useState<any | null>(null);
   const { locale } = useLanguage();
   const isBn = locale === "bn";
@@ -157,26 +155,8 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
   const banners = data?.banners || [];
 
   const filteredProducts = products.filter((p: any) => {
-    // 1. Category Tab Filter
     if (selectedCategoryTab !== "all" && p.category?.slug !== selectedCategoryTab) {
       return false;
-    }
-    // 2. Meal Time Filter
-    if (selectedMeal === "breakfast") {
-      const n = (p.name || "").toLowerCase();
-      return n.includes("রুটি") || n.includes("roti") || n.includes("পরোটা");
-    }
-    if (selectedMeal === "evening") {
-      const n = (p.name || "").toLowerCase();
-      return n.includes("মোমো") || n.includes("রোল") || n.includes("সিঙ্গারা") || n.includes("সমুচা") || n.includes("পিঠা");
-    }
-    if (selectedMeal === "tiffin") {
-      const n = (p.name || "").toLowerCase();
-      return n.includes("মোমো") || n.includes("রোল");
-    }
-    if (selectedMeal === "combo") {
-      const n = (p.name || "").toLowerCase();
-      return n.includes("কম্বো") || n.includes("combo") || p.isCombo;
     }
     return true;
   });
@@ -198,49 +178,33 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
         )}
 
 
-        {/* 4. Dynamic Categories & Fast Filter Rail (With Slide Controls & Auto-Slide) */}
-        {categories && categories.length > 0 && (
-          <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-xs sm:text-sm font-bold font-display text-stone-900 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-forest" />
-                <span>{isBn ? "পণ্য ক্যাটাগরি" : "Categories"}</span>
+        {/* Main Product Showcase with Integrated Sleek Category Tabs (Clean & Premium) */}
+        <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-3 pt-1">
+          {/* Unified Section Header */}
+          <div className="flex items-center justify-between border-b border-stone-200/90 pb-2.5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+              <h2 className="text-base sm:text-2xl font-bold font-display text-stone-900">
+                {isBn ? "আমাদের অর্গানিক পণ্যসমূহ" : "Our Organic Products"}
               </h2>
-
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/products"
-                  className="text-[10.5px] sm:text-xs font-bold text-forest hover:underline flex items-center gap-0.5 cursor-pointer"
-                >
-                  <span>{isBn ? "সবগুলো দেখুন" : "View All"}</span>
-                  <ChevronRight className="w-3 h-3" />
-                </Link>
-
-                {/* Category Slider Arrow Buttons */}
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={slideCatLeft}
-                    disabled={!canScrollCatLeft}
-                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white text-stone-700 hover:bg-forest hover:text-white border border-stone-200 shadow-2xs flex items-center justify-center transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed active:scale-90"
-                    aria-label="Previous categories"
-                  >
-                    <ChevronLeft className="w-3 h-3" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={slideCatRight}
-                    disabled={!canScrollCatRight}
-                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white text-stone-700 hover:bg-forest hover:text-white border border-stone-200 shadow-2xs flex items-center justify-center transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed active:scale-90"
-                    aria-label="Next categories"
-                  >
-                    <ChevronRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
+              {filteredProducts.length > 0 && (
+                <span className="text-[10px] sm:text-xs font-mono font-bold text-forest bg-forest/10 px-2.5 py-0.5 rounded-full border border-forest/20">
+                  {filteredProducts.length} {isBn ? "টি পণ্য" : "items"}
+                </span>
+              )}
             </div>
 
-            {/* Smooth Edge-to-Edge Scrollable Filter Strip */}
+            <Link
+              href="/products"
+              className="text-xs sm:text-sm font-bold text-forest hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <span>{isBn ? "সবগুলো দেখুন" : "View All"}</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {/* Integrated Smooth Scrollable Category Tabs with Icons */}
+          {categories && categories.length > 0 && (
             <div
               onMouseEnter={() => setIsCatHovered(true)}
               onMouseLeave={() => setIsCatHovered(false)}
@@ -255,17 +219,14 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
                 {/* All Category Pill */}
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedCategoryTab("all");
-                    setSelectedMeal("all");
-                  }}
-                  className={`snap-start shrink-0 whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer ${
-                    selectedCategoryTab === "all" && selectedMeal === "all"
-                      ? "bg-forest text-amber-300 border-forest shadow-xs font-extrabold"
+                  onClick={() => setSelectedCategoryTab("all")}
+                  className={`snap-start shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer ${
+                    selectedCategoryTab === "all"
+                      ? "bg-[#1F3D2B] text-amber-300 border-[#1F3D2B] shadow-xs font-extrabold"
                       : "bg-white text-stone-700 border-stone-200 hover:border-amber-400 hover:bg-[#FBF4EA]"
                   }`}
                 >
-                  <Leaf className="w-3 h-3 text-amber-400" />
+                  <Leaf className="w-3.5 h-3.5 text-amber-400" />
                   <span>{isBn ? "সকল পণ্য" : "All Products"}</span>
                   {products.length > 0 && (
                     <span className="text-[9.5px] px-1.5 py-0.2 rounded-full font-mono bg-black/20 text-amber-200">
@@ -274,23 +235,22 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
                   )}
                 </button>
 
-                {/* Dynamic DB Categories */}
+                {/* Dynamic DB Categories with Emojis */}
                 {categories.map((c: any) => {
                   const isSelected = selectedCategoryTab === c.slug;
+                  const emoji = getCategoryEmoji(c.name);
                   return (
                     <button
                       key={c.id}
                       type="button"
-                      onClick={() => {
-                        setSelectedCategoryTab(c.slug);
-                        setSelectedMeal("all");
-                      }}
-                      className={`snap-start shrink-0 whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer ${
+                      onClick={() => setSelectedCategoryTab(c.slug)}
+                      className={`snap-start shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer ${
                         isSelected
-                          ? "bg-forest text-amber-300 border-forest shadow-xs font-extrabold"
+                          ? "bg-[#1F3D2B] text-amber-300 border-[#1F3D2B] shadow-xs font-extrabold"
                           : "bg-white text-stone-700 border-stone-200 hover:border-amber-400 hover:bg-[#FBF4EA]"
                       }`}
                     >
+                      <span className="text-xs">{emoji}</span>
                       <span>{c.name}</span>
                       {c._count?.products ? (
                         <span
@@ -306,34 +266,7 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
                 })}
               </div>
             </div>
-          </section>
-        )}
-
-        {/* Dynamic Meal-Time Occasion Filter */}
-        <MealTimeFilterBar
-          selectedMeal={selectedMeal}
-          onSelectMeal={(m) => {
-            setSelectedMeal(m);
-            if (m !== "all") setSelectedCategoryTab("all");
-          }}
-        />
-
-        {/* 5. Main Product Grid & Loading States (DIRECTLY HERE!) */}
-        <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-3.5">
-          <div className="flex items-center justify-between border-b border-stone-200/90 pb-2.5">
-            <div>
-              <h2 className="text-base sm:text-2xl font-bold font-display text-stone-900 flex items-center gap-2">
-                <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 fill-red-500" />
-                <span>{isBn ? "জনপ্রিয় অর্গানিক পণ্যসমূহ" : "Featured Organic Products"}</span>
-              </h2>
-            </div>
-
-            {filteredProducts.length > 0 && (
-              <span className="text-[10px] sm:text-xs font-mono font-bold text-forest bg-forest/10 px-2.5 py-0.5 rounded-full border border-forest/20">
-                {filteredProducts.length} {isBn ? "টি পণ্য" : "items"}
-              </span>
-            )}
-          </div>
+          )}
 
           {/* If Loading OR 0 products exist in DB: Show Loading Skeletons */}
           {loading || filteredProducts.length === 0 ? (

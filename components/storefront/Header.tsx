@@ -1,7 +1,7 @@
 "use client";
 // components/storefront/Header.tsx - Ultra-Sleek Modern Luxury Header
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,10 @@ import {
   ChevronRight,
   Flame,
   Truck,
+  LayoutGrid,
+  ChevronDown,
+  Package,
+  BookOpen,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -35,8 +39,22 @@ export default function StorefrontHeader() {
   const { settings: siteSettings, categories: navCategories } = useStorefront();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const catDropdownRef = useRef<HTMLDivElement>(null);
   const [cartAnimate, setCartAnimate] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target as Node)) {
+        setCatDropdownOpen(false);
+      }
+    };
+    if (catDropdownOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+      return () => document.removeEventListener("mousedown", handleOutsideClick);
+    }
+  }, [catDropdownOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -214,47 +232,100 @@ export default function StorefrontHeader() {
         </div>
       )}
 
-      {/* 3. Desktop Sub-Navigation Menu */}
-      <nav className="hidden lg:block border-t border-stone-200/70 bg-[#FAF8F5]/90">
-        <div className="max-w-7xl mx-auto px-8 flex items-center justify-center gap-6 py-2">
-          <Link
-            href="/products"
-            className="text-xs font-bold text-stone-700 hover:text-forest transition-colors py-1 cursor-pointer hover:-translate-y-0.5"
-          >
-            {locale === "bn" ? "সকল পণ্য" : "All Products"}
-          </Link>
-
-          {navCategories.map((c: any) => (
-            <Link
-              key={c.id}
-              href={`/products?category=${c.slug}`}
-              className="text-xs font-semibold text-stone-600 hover:text-forest transition-all py-1 cursor-pointer hover:-translate-y-0.5"
+      {/* 3. Desktop Sub-Navigation Menu (Ultra-Clean & Clutter-Free) */}
+      <nav className="hidden lg:block border-t border-stone-200/70 bg-[#FAF8F5]/90 relative z-30">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between py-2">
+          {/* Left: Category Dropdown Button */}
+          <div className="relative" ref={catDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setCatDropdownOpen(!catDropdownOpen)}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1F3D2B] text-amber-300 hover:bg-[#15291C] font-bold text-xs transition-all shadow-xs cursor-pointer active:scale-95"
             >
-              {c.name}
+              <LayoutGrid className="w-3.5 h-3.5 text-amber-400" />
+              <span>{locale === "bn" ? "সকল ক্যাটাগরি" : "All Categories"}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${catDropdownOpen ? "rotate-180 text-amber-400" : ""}`} />
+            </button>
+
+            {/* Dropdown Popover */}
+            {catDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-stone-200/90 p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="px-3 py-2 border-b border-stone-100 flex items-center justify-between text-[11px] font-bold text-stone-500">
+                  <span>{locale === "bn" ? "পণ্য ক্যাটাগরি ব্রাউজ করুন" : "Browse Categories"}</span>
+                  <span className="text-[10px] bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded-md font-mono font-bold">
+                    {navCategories.length} {locale === "bn" ? "টি" : "items"}
+                  </span>
+                </div>
+                <div className="max-h-80 overflow-y-auto py-1.5 space-y-0.5">
+                  <Link
+                    href="/products"
+                    onClick={() => setCatDropdownOpen(false)}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-forest hover:bg-forest/10 transition-colors"
+                  >
+                    <span>{locale === "bn" ? "সকল পণ্য একসাথে" : "All Products"}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-forest" />
+                  </Link>
+                  {navCategories.map((c: any) => (
+                    <Link
+                      key={c.id}
+                      href={`/products?category=${c.slug}`}
+                      onClick={() => setCatDropdownOpen(false)}
+                      className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-stone-700 hover:text-forest hover:bg-stone-50 transition-colors"
+                    >
+                      <span className="truncate">{c.name}</span>
+                      {c._count?.products ? (
+                        <span className="text-[10px] text-stone-400 font-mono ml-2 shrink-0">
+                          {c._count.products}
+                        </span>
+                      ) : null}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right / Center: Clean Curated Navigation Links (No more wall of 16 text links!) */}
+          <div className="flex items-center gap-6 text-xs font-semibold text-stone-600">
+            <Link
+              href="/products"
+              className="hover:text-forest transition-colors py-1 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5"
+            >
+              <span>{locale === "bn" ? "সকল পণ্য" : "All Products"}</span>
             </Link>
-          ))}
 
-          <Link
-            href="/subscription"
-            className="text-xs font-semibold text-stone-600 hover:text-forest transition-all py-1 cursor-pointer hover:-translate-y-0.5"
-          >
-            {locale === "bn" ? "সাবস্ক্রিপশন বক্স" : "Subscriptions"}
-          </Link>
+            <Link
+              href="/products?combo=true"
+              className="hover:text-forest transition-colors py-1 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 text-amber-900 font-bold"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>{locale === "bn" ? "কম্বো ও অফার" : "Combos & Deals"}</span>
+            </Link>
 
-          <Link
-            href="/recipes"
-            className="text-xs font-semibold text-stone-600 hover:text-forest transition-all py-1 cursor-pointer hover:-translate-y-0.5"
-          >
-            {locale === "bn" ? "রেসিপি ও টিপস" : "Recipes"}
-          </Link>
+            <Link
+              href="/subscription"
+              className="hover:text-forest transition-colors py-1 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5"
+            >
+              <Package className="w-3.5 h-3.5 text-stone-400" />
+              <span>{locale === "bn" ? "সাবস্ক্রিপশন বক্স" : "Subscriptions"}</span>
+            </Link>
 
-          <Link
-            href="/track"
-            className="text-xs font-semibold text-stone-600 hover:text-forest transition-all py-1 cursor-pointer flex items-center gap-1 hover:-translate-y-0.5"
-          >
-            <Truck className="w-3.5 h-3.5 text-forest" />
-            <span>{locale === "bn" ? "অর্ডার ট্র্যাকিং" : "Track Order"}</span>
-          </Link>
+            <Link
+              href="/recipes"
+              className="hover:text-forest transition-colors py-1 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-stone-400" />
+              <span>{locale === "bn" ? "রেসিপি ও টিপস" : "Recipes"}</span>
+            </Link>
+
+            <Link
+              href="/track"
+              className="hover:text-forest transition-colors py-1 cursor-pointer flex items-center gap-1.5 hover:-translate-y-0.5 font-bold text-forest"
+            >
+              <Truck className="w-3.5 h-3.5 text-forest" />
+              <span>{locale === "bn" ? "অর্ডার ট্র্যাকিং" : "Track Order"}</span>
+            </Link>
+          </div>
         </div>
       </nav>
 
