@@ -1,7 +1,7 @@
 "use client";
 // components/storefront/HomePageClient.tsx - Ultra-Advanced World-Class Dynamic Storefront
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Leaf,
@@ -42,82 +42,12 @@ const ComboDealsSlider = dynamic(
   { ssr: false }
 );
 
-function getCategoryEmoji(name: string): string {
-  const n = (name || "").toLowerCase();
-  if (n.includes("মধু") || n.includes("honey")) return "🍯";
-  if (n.includes("ঘি") || n.includes("ghee")) return "🧈";
-  if (n.includes("তেল") || n.includes("oil")) return "🌱";
-  if (n.includes("খেজুর") || n.includes("date")) return "🌴";
-  if (n.includes("মসলা") || n.includes("spice")) return "🌶️";
-  if (n.includes("চাল") || n.includes("ডাল") || n.includes("rice") || n.includes("dal")) return "🌾";
-  if (n.includes("বাদাম") || n.includes("nut") || n.includes("seed")) return "🥜";
-  if (n.includes("চা") || n.includes("কফি") || n.includes("tea") || n.includes("coffee")) return "☕";
-  if (n.includes("ফ্রোজেন") || n.includes("frozen") || n.includes("মোমো") || n.includes("পরোটা")) return "🥟";
-  if (n.includes("কম্বো") || n.includes("combo") || n.includes("deal")) return "🎁";
-  return "🌿";
-}
-
 export default function HomePageClient({ initialData }: { initialData: any }) {
   const [data, setData] = useState<any>(initialData);
   const [loading, setLoading] = useState<boolean>(!initialData?.featuredProducts?.length);
-  const [selectedCategoryTab, setSelectedCategoryTab] = useState<string>("all");
   const [quickViewProduct, setQuickViewProduct] = useState<any | null>(null);
   const { locale } = useLanguage();
   const isBn = locale === "bn";
-
-
-  // Category slider refs & scroll logic
-  const catScrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollCatLeft, setCanScrollCatLeft] = useState(false);
-  const [canScrollCatRight, setCanScrollCatRight] = useState(true);
-  const [isCatHovered, setIsCatHovered] = useState(false);
-
-  const checkCatScroll = useCallback(() => {
-    if (!catScrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = catScrollRef.current;
-    setCanScrollCatLeft(scrollLeft > 10);
-    setCanScrollCatRight(scrollLeft < scrollWidth - clientWidth - 10);
-  }, []);
-
-  const slideCatLeft = () => {
-    if (!catScrollRef.current) return;
-    const container = catScrollRef.current;
-    const scrollAmount = container.clientWidth * 0.7;
-    container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
-  };
-
-  const slideCatRight = useCallback(() => {
-    if (!catScrollRef.current) return;
-    const container = catScrollRef.current;
-    const scrollAmount = container.clientWidth * 0.7;
-    if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 15) {
-      container.scrollTo({ left: 0, behavior: "smooth" });
-    } else {
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  }, []);
-
-  useEffect(() => {
-    checkCatScroll();
-    const el = catScrollRef.current;
-    if (el) {
-      el.addEventListener("scroll", checkCatScroll, { passive: true });
-      window.addEventListener("resize", checkCatScroll);
-    }
-    return () => {
-      if (el) el.removeEventListener("scroll", checkCatScroll);
-      window.removeEventListener("resize", checkCatScroll);
-    };
-  }, [checkCatScroll]);
-
-  // Auto-Slide categories every 4.5 seconds
-  useEffect(() => {
-    if (isCatHovered) return;
-    const timer = setInterval(() => {
-      slideCatRight();
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [isCatHovered, slideCatRight]);
 
   useEffect(() => {
     // 1. If initialData is provided, display it immediately
@@ -154,12 +84,7 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
   const comboDeals = Array.from(comboMap.values());
   const banners = data?.banners || [];
 
-  const filteredProducts = products.filter((p: any) => {
-    if (selectedCategoryTab !== "all" && p.category?.slug !== selectedCategoryTab) {
-      return false;
-    }
-    return true;
-  });
+  const filteredProducts = products;
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col justify-between overflow-x-hidden selection:bg-forest selection:text-white">
@@ -178,8 +103,8 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
         )}
 
 
-        {/* Main Product Showcase with Integrated Sleek Category Tabs (Clean & Premium) */}
-        <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-3 pt-1">
+        {/* Main Product Showcase - Direct, Clean & Beautiful (No Middle Clutter) */}
+        <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 pt-2">
           {/* Unified Section Header */}
           <div className="flex items-center justify-between border-b border-stone-200/90 pb-2.5">
             <div className="flex items-center gap-2">
@@ -187,9 +112,9 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
               <h2 className="text-base sm:text-2xl font-bold font-display text-stone-900">
                 {isBn ? "আমাদের অর্গানিক পণ্যসমূহ" : "Our Organic Products"}
               </h2>
-              {filteredProducts.length > 0 && (
+              {products.length > 0 && (
                 <span className="text-[10px] sm:text-xs font-mono font-bold text-forest bg-forest/10 px-2.5 py-0.5 rounded-full border border-forest/20">
-                  {filteredProducts.length} {isBn ? "টি পণ্য" : "items"}
+                  {products.length} {isBn ? "টি পণ্য" : "items"}
                 </span>
               )}
             </div>
@@ -198,75 +123,10 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
               href="/products"
               className="text-xs sm:text-sm font-bold text-forest hover:underline flex items-center gap-1 cursor-pointer"
             >
-              <span>{isBn ? "সবগুলো দেখুন" : "View All"}</span>
+              <span>{isBn ? "সকল পণ্য দেখুন" : "View All"}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-
-          {/* Integrated Smooth Scrollable Category Tabs with Icons */}
-          {categories && categories.length > 0 && (
-            <div
-              onMouseEnter={() => setIsCatHovered(true)}
-              onMouseLeave={() => setIsCatHovered(false)}
-              onTouchStart={() => setIsCatHovered(true)}
-              onTouchEnd={() => setIsCatHovered(false)}
-              className="relative -mx-3 px-3 sm:-mx-0 sm:px-0"
-            >
-              <div
-                ref={catScrollRef}
-                className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none snap-x touch-pan-x scroll-smooth"
-              >
-                {/* All Category Pill */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategoryTab("all")}
-                  className={`snap-start shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer ${
-                    selectedCategoryTab === "all"
-                      ? "bg-[#1F3D2B] text-amber-300 border-[#1F3D2B] shadow-xs font-extrabold"
-                      : "bg-white text-stone-700 border-stone-200 hover:border-amber-400 hover:bg-[#FBF4EA]"
-                  }`}
-                >
-                  <Leaf className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{isBn ? "সকল পণ্য" : "All Products"}</span>
-                  {products.length > 0 && (
-                    <span className="text-[9.5px] px-1.5 py-0.2 rounded-full font-mono bg-black/20 text-amber-200">
-                      {products.length}
-                    </span>
-                  )}
-                </button>
-
-                {/* Dynamic DB Categories with Emojis */}
-                {categories.map((c: any) => {
-                  const isSelected = selectedCategoryTab === c.slug;
-                  const emoji = getCategoryEmoji(c.name);
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setSelectedCategoryTab(c.slug)}
-                      className={`snap-start shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer ${
-                        isSelected
-                          ? "bg-[#1F3D2B] text-amber-300 border-[#1F3D2B] shadow-xs font-extrabold"
-                          : "bg-white text-stone-700 border-stone-200 hover:border-amber-400 hover:bg-[#FBF4EA]"
-                      }`}
-                    >
-                      <span className="text-xs">{emoji}</span>
-                      <span>{c.name}</span>
-                      {c._count?.products ? (
-                        <span
-                          className={`text-[9.5px] px-1.5 py-0.2 rounded-full font-mono ${
-                            isSelected ? "bg-black/20 text-amber-200" : "bg-stone-100 text-stone-500"
-                          }`}
-                        >
-                          {c._count.products}
-                        </span>
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* If Loading OR 0 products exist in DB: Show Loading Skeletons */}
           {loading || filteredProducts.length === 0 ? (
