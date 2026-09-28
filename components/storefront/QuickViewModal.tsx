@@ -69,6 +69,7 @@ export default function QuickViewModal({ product, onClose }: QuickViewModalProps
               src={imageSrc}
               alt={product.name}
               fill
+              unoptimized={true}
               className="object-cover object-center transition-transform duration-500 hover:scale-105"
               sizes="380px"
               onError={(e) => {

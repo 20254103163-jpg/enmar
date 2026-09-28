@@ -124,7 +124,7 @@ export default function SearchSpotlightModal({ isOpen, onClose }: SearchSpotligh
                   className="flex items-center gap-3 p-2.5 hover:bg-[#FAF8F5] rounded-2xl transition-colors cursor-pointer group"
                 >
                   <div className="relative w-12 h-12 rounded-xl bg-gradient-to-b from-[#FAF8F5] to-[#F4EFEB] border border-stone-200/80 overflow-hidden shrink-0 flex items-center justify-center p-1 shadow-xs">
-                    <Image src={imageSrc} alt={product.name} fill className="object-contain p-0.5 drop-shadow-xs" sizes="48px" />
+                    <Image src={imageSrc} alt={product.name} fill unoptimized={true} className="object-contain p-0.5 drop-shadow-xs" sizes="48px" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-display font-bold text-xs text-stone-900 group-hover:text-forest truncate">

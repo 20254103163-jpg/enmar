@@ -223,8 +223,14 @@ export default function HeaderSearchBar({ isMobileOpen, onCloseMobile }: HeaderS
                           src={imageSrc}
                           alt={product.name}
                           fill
+                          unoptimized={true}
                           className="object-cover"
                           sizes="48px"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.srcset = "";
+                            target.src = "/placeholder.png";
+                          }}
                         />
                       </div>
                       <div className="flex-1 min-w-0">

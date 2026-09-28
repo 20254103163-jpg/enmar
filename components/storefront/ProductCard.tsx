@@ -89,6 +89,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
             src={imageSrc}
             alt={product.name}
             fill
+            unoptimized={true}
             className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-108"
             sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
             onError={(e) => {

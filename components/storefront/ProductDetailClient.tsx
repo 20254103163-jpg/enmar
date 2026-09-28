@@ -270,6 +270,7 @@ export default function ProductDetailClient({
                 alt={product.name}
                 fill
                 priority
+                unoptimized={true}
                 className="object-cover object-center transition-all duration-300 hover:scale-105"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 onError={(e) => {
@@ -322,6 +323,7 @@ export default function ProductDetailClient({
                       src={getSafeImageUrl(img)}
                       alt={`${product.name} - thumbnail ${idx + 1}`}
                       fill
+                      unoptimized={true}
                       className="object-cover"
                       sizes="80px"
                       onError={(e) => {

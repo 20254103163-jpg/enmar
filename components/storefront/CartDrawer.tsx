@@ -125,6 +125,7 @@ export default function CartDrawer() {
                         src={imageSrc}
                         alt={item.name}
                         fill
+                        unoptimized={true}
                         className="object-contain p-1 drop-shadow-xs"
                         sizes="64px"
                         onError={(e) => {
