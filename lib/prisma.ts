@@ -5,8 +5,8 @@ function getSanitizedDatabaseUrl(): string | undefined {
   let url = process.env.DATABASE_URL;
   if (!url) return undefined;
 
-  // 1. Strip any accidental wrapping double or single quotes from Vercel UI
-  url = url.trim().replace(/^[\"']|[\"']$/g, "");
+  // 1. Strip any accidental wrapping double or single quotes or trailing dots
+  url = url.trim().replace(/^["']|["']$/g, "").replace(/\.+$/, "").trim();
 
   // 2. Safely parse and ensure password special characters (like @ or #) are properly URL-encoded
   try {
