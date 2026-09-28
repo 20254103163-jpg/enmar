@@ -30,7 +30,7 @@ export async function GET(
         { success: true, ...cached },
         {
           headers: {
-            "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
           },
         }
       );
@@ -53,12 +53,12 @@ export async function GET(
             .slice(0, 4);
 
           const payload = { product: found, relatedProducts };
-          serverCache.set(cacheKey, payload, 300, ["products"]);
+          serverCache.set(cacheKey, payload, 60, ["products"]);
           return NextResponse.json(
             { success: true, ...payload },
             {
               headers: {
-                "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800",
+                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
               },
             }
           );
@@ -122,7 +122,7 @@ export async function GET(
       { success: true, ...payload },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
         },
       }
     );

@@ -39,24 +39,14 @@ export function setCachedCategories(data: any) {
 
 export function getCachedHomeData() {
   if (typeof window === "undefined") return null;
+  // Always return null to guarantee immediate real-time sync with database updates and deletions
   try {
-    const raw = sessionStorage.getItem(CACHE_KEY_HOME) || localStorage.getItem(CACHE_KEY_HOME);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      // Valid for 10 minutes cache
-      if (parsed && parsed.timestamp && Date.now() - parsed.timestamp < 10 * 60 * 1000) {
-        return parsed.data;
-      }
-    }
+    sessionStorage.removeItem(CACHE_KEY_HOME);
+    localStorage.removeItem(CACHE_KEY_HOME);
   } catch (e) {}
   return null;
 }
 
 export function setCachedHomeData(data: any) {
-  if (typeof window === "undefined" || !data) return;
-  try {
-    const payload = JSON.stringify({ timestamp: Date.now(), data });
-    sessionStorage.setItem(CACHE_KEY_HOME, payload);
-    localStorage.setItem(CACHE_KEY_HOME, payload);
-  } catch (e) {}
+  // No-op to prevent storing stale products in client browser storage
 }

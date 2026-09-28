@@ -124,8 +124,7 @@ export async function POST(req: NextRequest) {
 
     revalidatePath("/", "layout");
     revalidatePath("/products");
-    serverCache.invalidateTag("products");
-    serverCache.invalidateTag("home");
+    serverCache.invalidateAll();
     await triggerSnapshotRebuild().catch(() => {});
     return NextResponse.json({ success: true, product }, { status: 201 });
   } catch (error: any) {

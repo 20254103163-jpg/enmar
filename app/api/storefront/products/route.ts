@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
         { success: true, ...cachedResponse },
         {
           headers: {
-            "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
           },
         }
       );
@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
         { success: true, ...result },
         {
           headers: {
-            "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
           },
         }
       );
@@ -241,13 +241,13 @@ export async function GET(req: NextRequest) {
       pagination,
     };
 
-    serverCache.set(cacheKey, responsePayload, 300, ["products"]);
+    serverCache.set(cacheKey, responsePayload, 60, ["products"]);
 
     return NextResponse.json(
       { success: true, ...responsePayload },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
         },
       }
     );

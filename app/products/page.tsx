@@ -103,7 +103,7 @@ function ProductsContent() {
     setLoading(true);
     const queryString = buildQueryParams(1);
 
-    fetch(`/api/storefront/products?${queryString}`)
+    fetch(`/api/storefront/products?${queryString}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (data.products) {
@@ -133,7 +133,7 @@ function ProductsContent() {
     const nextPage = pagination.page + 1;
     const queryString = buildQueryParams(nextPage);
 
-    fetch(`/api/storefront/products?${queryString}`)
+    fetch(`/api/storefront/products?${queryString}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (data.products) {

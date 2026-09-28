@@ -182,8 +182,8 @@ export async function generateStorefrontSnapshots(): Promise<StorefrontSnapshots
         updatedAt: new Date().toISOString(),
       };
 
-      // 1. Sync directly to RAM memory cache (0.1ms access, 30 min TTL with bounded memory guard)
-      const CACHE_TTL = 1800; // 30 minutes in Node RAM
+      // 1. Sync directly to RAM memory cache (0.1ms access, bounded memory guard)
+      const CACHE_TTL = 60; // 60 seconds TTL for fast reflection of database updates
       serverCache.set("snapshot_home", homePayload, CACHE_TTL, ["home", "products", "settings", "categories", "banners"]);
       serverCache.set("snapshot_products", cardOptimizedProducts, CACHE_TTL, ["products"]);
       serverCache.set("snapshot_categories", categories, CACHE_TTL, ["categories"]);
@@ -228,23 +228,7 @@ export async function getStorefrontSnapshot<T = any>(
   const cached = serverCache.get<T>(`snapshot_${key}`);
   if (cached) return cached;
 
-  // 2. Zero-Latency Local Disk Snapshot (0.5ms) + Non-blocking Background SWR Sync
-  try {
-    const filePath = path.join(SNAPSHOT_DIR, `${key}.json`);
-    const fileContent = await readFile(filePath, "utf-8");
-    if (fileContent) {
-      const parsed = JSON.parse(fileContent);
-      // Pre-warm RAM cache immediately
-      serverCache.set(`snapshot_${key}`, parsed, 1800, [key]);
-      // Trigger silent background DB sync without delaying this user request
-      generateStorefrontSnapshots().catch(() => {});
-      return parsed as T;
-    }
-  } catch (e) {
-    // Disk file might not exist on fresh scaffold
-  }
-
-  // 3. Fallback Synchronous Live DB Query
+  // 2. Synchronous Live Database Query (Guarantees immediate sync with DB updates & deletes)
   try {
     const snapshots = await generateStorefrontSnapshots();
     if (snapshots) {
@@ -258,6 +242,19 @@ export async function getStorefrontSnapshot<T = any>(
     console.warn(`[getStorefrontSnapshot ${key} DB Warning]:`, dbErr);
   }
 
+  // 3. Fallback to Local Disk Snapshot ONLY if DB query failed
+  try {
+    const filePath = path.join(SNAPSHOT_DIR, `${key}.json`);
+    const fileContent = await readFile(filePath, "utf-8");
+    if (fileContent) {
+      const parsed = JSON.parse(fileContent);
+      serverCache.set(`snapshot_${key}`, parsed, 60, [key]);
+      return parsed as T;
+    }
+  } catch (e) {
+    // Disk file might not exist on fresh scaffold
+  }
+
   return null;
 }
 
@@ -266,22 +263,19 @@ export async function getStorefrontSnapshot<T = any>(
  * Automatically invalidates stale caches and writes updated JSON snapshots to disk atomically.
  */
 export async function triggerSnapshotRebuild(): Promise<StorefrontSnapshots | null> {
-  serverCache.invalidateTag("products");
-  serverCache.invalidateTag("home");
-  serverCache.invalidateTag("categories");
-  serverCache.invalidateTag("settings");
-  serverCache.invalidateTag("theme");
-  serverCache.invalidateTag("banners");
-  serverCache.invalidateTag("features");
+  activeRebuildPromise = null;
+  serverCache.invalidateAll();
 
   const snapshots = await generateStorefrontSnapshots();
 
   try {
     revalidatePath("/", "layout");
     revalidatePath("/products");
+    revalidatePath("/products/[slug]", "page");
   } catch (e) {
     // revalidatePath might not be called in CLI context
   }
 
   return snapshots;
 }
+

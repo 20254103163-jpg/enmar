@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { serverCache } from "@/lib/serverCache";
+import { triggerSnapshotRebuild } from "@/lib/snapshotEngine";
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,6 +60,8 @@ export async function POST(req: NextRequest) {
 
       revalidatePath("/", "layout");
       revalidatePath("/products");
+      serverCache.invalidateAll();
+      await triggerSnapshotRebuild().catch(() => {});
 
       return NextResponse.json({
         success: true,
@@ -79,6 +83,8 @@ export async function POST(req: NextRequest) {
 
       revalidatePath("/", "layout");
       revalidatePath("/products");
+      serverCache.invalidateAll();
+      await triggerSnapshotRebuild().catch(() => {});
       return NextResponse.json({
         success: true,
         message: `Successfully updated stock to ${stock} for ${numericIds.length} products.`,
@@ -109,6 +115,8 @@ export async function POST(req: NextRequest) {
 
       revalidatePath("/", "layout");
       revalidatePath("/products");
+      serverCache.invalidateAll();
+      await triggerSnapshotRebuild().catch(() => {});
       return NextResponse.json({
         success: true,
         message: `Successfully updated prices (${percentChange > 0 ? "+" : ""}${percentChange}%) for ${products.length} products.`,
@@ -128,6 +136,8 @@ export async function POST(req: NextRequest) {
 
       revalidatePath("/", "layout");
       revalidatePath("/products");
+      serverCache.invalidateAll();
+      await triggerSnapshotRebuild().catch(() => {});
       return NextResponse.json({
         success: true,
         message: `Successfully updated category for ${numericIds.length} products.`,

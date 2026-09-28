@@ -126,8 +126,7 @@ export async function PUT(
     revalidatePath("/", "layout");
     revalidatePath("/products");
     revalidatePath(`/products/${updated.slug}`);
-    serverCache.invalidateTag("products");
-    serverCache.invalidateTag("home");
+    serverCache.invalidateAll();
     await triggerSnapshotRebuild().catch(() => {});
     return NextResponse.json({ success: true, product: updated });
   } catch (error: any) {
@@ -179,8 +178,8 @@ export async function DELETE(
 
     revalidatePath("/", "layout");
     revalidatePath("/products");
-    serverCache.invalidateTag("products");
-    serverCache.invalidateTag("home");
+    revalidatePath(`/products/${product.slug}`);
+    serverCache.invalidateAll();
     await triggerSnapshotRebuild().catch(() => {});
     return NextResponse.json({
       success: true,

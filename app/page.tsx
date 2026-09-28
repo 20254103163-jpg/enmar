@@ -2,7 +2,7 @@
 import { getStorefrontHomeData } from "@/lib/server/storefront-data";
 import HomePageClient from "@/components/storefront/HomePageClient";
 
-export const revalidate = 60; // ISR revalidate every 60 seconds
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const initialData = await getStorefrontHomeData();

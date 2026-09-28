@@ -122,19 +122,18 @@ export default function HomePageClient({ initialData }: { initialData: any }) {
   }, [isCatHovered, slideCatRight]);
 
   useEffect(() => {
-    // 1. If initialData is provided, display it immediately (0ms delay)
+    // 1. If initialData is provided, display it immediately
     if (initialData?.featuredProducts?.length) {
-      setCachedHomeData(initialData);
+      setData(initialData);
       setLoading(false);
     }
 
-    // 2. Background SWR fetch from live database API so new banners, toggles, and updates reflect immediately
-    fetch("/api/storefront/home")
+    // 2. Fresh fetch from live database API with cache: 'no-store'
+    fetch("/api/storefront/home", { cache: "no-store" })
       .then((res) => res.json())
       .then((json) => {
         if (json.success) {
           setData(json);
-          setCachedHomeData(json);
         }
       })
       .catch((e) => console.error("Home sync error:", e))
