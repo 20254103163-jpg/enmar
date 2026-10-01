@@ -8,7 +8,7 @@ const next = require("next");
 process.env.NODE_ENV = "production";
 process.chdir(__dirname);
 
-// Load .env variables automatically
+// 1. Load .env variables automatically
 try {
   const envPath = path.join(__dirname, ".env");
   if (fs.existsSync(envPath)) {
@@ -35,6 +35,21 @@ try {
   console.error("[ENMAR] Could not parse .env file:", e);
 }
 
+// 2. Ensure Prisma Client exists
+try {
+  const prismaClientDir = path.join(__dirname, "node_modules", ".prisma", "client");
+  if (!fs.existsSync(prismaClientDir)) {
+    const { execSync } = require("child_process");
+    const schemaPath = path.join(__dirname, "prisma", "schema.prisma");
+    if (fs.existsSync(schemaPath)) {
+      console.log("[ENMAR] Generating Prisma Client at startup...");
+      execSync(`npx prisma generate --schema="${schemaPath}"`, { stdio: "inherit" });
+    }
+  }
+} catch (err) {
+  console.warn("[ENMAR] Startup Prisma notice:", err.message);
+}
+
 const dev = false;
 const app = next({ dev, dir: __dirname });
 const handle = app.getRequestHandler();
@@ -54,7 +69,7 @@ app.prepare().then(() => {
     }
   }).listen(port, (err) => {
     if (err) throw err;
-    console.log(`> [ENMAR] Server ready on ${port}`);
+    console.log(`> [ENMAR] Live Server ready on ${port}`);
   });
 }).catch((err) => {
   console.error("[ENMAR] App prepare failed:", err);

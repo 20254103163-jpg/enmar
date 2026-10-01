@@ -11,8 +11,7 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "serve": "node server.js",
-    "postinstall": "node scripts/postinstall.js"
+    "serve": "node server.js"
   },
   "keywords": [
     "ecommerce",
