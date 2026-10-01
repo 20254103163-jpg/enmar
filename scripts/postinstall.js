@@ -1,33 +1,50 @@
-// scripts/postinstall.js - Safe Postinstall Runner for cPanel
+// scripts/postinstall.js - Safe Prisma Generate for cPanel
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-try {
-  // Check potential locations for schema.prisma
-  const locations = [
+// Try to find the project root (where prisma/schema.prisma lives)
+function findSchemaPath() {
+  const candidates = [
+    // Most likely: script is in /app_root/scripts/postinstall.js
     path.join(__dirname, '..', 'prisma', 'schema.prisma'),
+    // Fallback: CWD is app root
     path.join(process.cwd(), 'prisma', 'schema.prisma'),
+    // Fallback: schema at root level
     path.join(process.cwd(), 'schema.prisma'),
+    path.join(__dirname, '..', 'schema.prisma'),
   ];
 
-  let schemaPath = null;
-  for (const loc of locations) {
-    if (fs.existsSync(loc)) {
-      schemaPath = loc;
-      break;
-    }
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    } catch (e) {}
+  }
+  return null;
+}
+
+try {
+  const schemaPath = findSchemaPath();
+
+  if (!schemaPath) {
+    console.log('[ENMAR postinstall] No schema.prisma found — skipping prisma generate.');
+    process.exit(0);
   }
 
-  if (schemaPath) {
-    console.log('[ENMAR] Generating Prisma Client using schema at:', schemaPath);
-    execSync(`npx prisma generate --schema="${schemaPath}"`, { stdio: 'inherit' });
-    console.log('[ENMAR] Prisma Client generated successfully.');
-  } else {
-    console.log('[ENMAR] No schema.prisma found in immediate path during postinstall. Skipping gracefully.');
-  }
+  console.log('[ENMAR postinstall] Found schema at:', schemaPath);
+
+  // Use --schema flag to avoid any config file confusion
+  execSync(`npx prisma generate --schema="${schemaPath}"`, {
+    stdio: 'inherit',
+    env: { ...process.env },
+  });
+
+  console.log('[ENMAR postinstall] Prisma Client generated successfully.');
 } catch (error) {
-  console.warn('[ENMAR] Prisma generate postinstall warning:', error.message);
-  // Do not throw or exit with error so cPanel npm install completes cleanly
+  // Do NOT fail the install — just warn and continue
+  console.warn('[ENMAR postinstall] Warning (non-fatal):', error.message);
 }
+
 process.exit(0);
