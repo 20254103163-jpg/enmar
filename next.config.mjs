@@ -6,8 +6,9 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
+  serverExternalPackages: ['@prisma/client', 'prisma'],
   outputFileTracingIncludes: {
-    '/api/**/*': ['./node_modules/@prisma/client/**/*'],
+    '/api/**/*': ['./node_modules/@prisma/client/**/*', './node_modules/.prisma/client/**/*'],
   },
   experimental: {
     optimizePackageImports: [
@@ -15,7 +16,6 @@ const nextConfig = {
       'clsx',
       'tailwind-merge',
       'framer-motion',
-      '@prisma/client',
     ],
   },
   images: {
