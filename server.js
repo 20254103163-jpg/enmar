@@ -1,12 +1,26 @@
-// server.js — 100% cPanel Phusion Passenger & CloudLinux Compatible Next.js Server
-const { createServer } = require("http");
+// server.js — 100% cPanel Phusion Passenger & CloudLinux Next.js Server
+if (typeof PhusionPassenger !== "undefined") {
+  PhusionPassenger.configure({ autoInstall: false });
+}
+
+const http = require("http");
 const { parse } = require("url");
 const path = require("path");
 const fs = require("fs");
-const next = require("next");
 
 process.env.NODE_ENV = "production";
 process.chdir(__dirname);
+
+// Log function for cPanel debugging
+function logDebug(msg) {
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  console.log(msg);
+  try {
+    fs.appendFileSync(path.join(__dirname, "cpanel_debug.log"), line);
+  } catch (e) {}
+}
+
+logDebug("Starting ENMAR Next.js Server on cPanel...");
 
 // 1. Load .env variables automatically
 try {
@@ -29,48 +43,49 @@ try {
         }
       }
     });
-    console.log("[ENMAR] Successfully loaded .env variables");
+    logDebug("Successfully loaded .env variables");
   }
 } catch (e) {
-  console.error("[ENMAR] Could not parse .env file:", e);
+  logDebug("Error parsing .env file: " + e.message);
 }
 
-// 2. Ensure Prisma Client exists
-try {
-  const prismaClientDir = path.join(__dirname, "node_modules", ".prisma", "client");
-  if (!fs.existsSync(prismaClientDir)) {
-    const { execSync } = require("child_process");
-    const schemaPath = path.join(__dirname, "prisma", "schema.prisma");
-    if (fs.existsSync(schemaPath)) {
-      console.log("[ENMAR] Generating Prisma Client at startup...");
-      execSync(`npx prisma generate --schema="${schemaPath}"`, { stdio: "inherit" });
-    }
-  }
-} catch (err) {
-  console.warn("[ENMAR] Startup Prisma notice:", err.message);
-}
-
+const next = require("next");
 const dev = false;
 const app = next({ dev, dir: __dirname });
 const handle = app.getRequestHandler();
 
-// In cPanel Phusion Passenger, process.env.PORT may be a Unix socket path or a port number.
+let isReady = false;
+
+const server = http.createServer(async (req, res) => {
+  try {
+    const parsedUrl = parse(req.url, true);
+    if (!isReady) {
+      // If a request arrives before prepare() completes, await prepare
+      await app.prepare();
+      isReady = true;
+    }
+    await handle(req, res, parsedUrl);
+  } catch (err) {
+    logDebug("Request error on " + req.url + ": " + err.message);
+    res.statusCode = 500;
+    res.end("Internal Server Error: " + (err.message || "Unknown error"));
+  }
+});
+
+// In cPanel Phusion Passenger, process.env.PORT is either a string (socket path) or number.
 const port = process.env.PORT || 3000;
 
-app.prepare().then(() => {
-  createServer((req, res) => {
-    try {
-      const parsedUrl = parse(req.url, true);
-      handle(req, res, parsedUrl);
-    } catch (err) {
-      console.error("Error handling request:", req.url, err);
-      res.statusCode = 500;
-      res.end("Internal Server Error");
-    }
-  }).listen(port, (err) => {
-    if (err) throw err;
-    console.log(`> [ENMAR] Live Server ready on ${port}`);
-  });
-}).catch((err) => {
-  console.error("[ENMAR] App prepare failed:", err);
+// Start listening immediately so Phusion Passenger detects the server alive without 503 timeout
+server.listen(port, () => {
+  logDebug("Live HTTP server listening on " + port);
+  // Prepare Next.js in background
+  app
+    .prepare()
+    .then(() => {
+      isReady = true;
+      logDebug("Next.js app prepared successfully and ready for traffic!");
+    })
+    .catch((err) => {
+      logDebug("App prepare error: " + err.message);
+    });
 });
