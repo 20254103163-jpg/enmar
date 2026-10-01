@@ -6,6 +6,9 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./node_modules/@prisma/client/**/*'],
+  },
   experimental: {
     optimizePackageImports: [
       'lucide-react',
