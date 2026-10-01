@@ -1,0 +1,8 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/enmarsh1/ecom
+    - export NODEBIN=/home/enmarsh1/nodevenv/ecom/24/bin
+    - cd $DEPLOYPATH && $NODEBIN/npm install
+    - cd $DEPLOYPATH && $NODEBIN/npm run build
+    - /usr/local/cpanel/bin/build_time_update_caches 2>/dev/null || true
