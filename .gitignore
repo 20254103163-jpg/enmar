@@ -7,9 +7,8 @@
 # testing
 /coverage
 
-# next.js build cache and standalone artifact
-/.next/cache/
-/.next/standalone/
+# next.js build output (server side e build hobe)
+/.next/
 
 # production
 /build
@@ -24,18 +23,20 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# local env files (sensitive - never commit)
 .env*.local
+
+# editor files
 .aider*
+.vscode/
 
 # vercel
 .vercel
 
-# typescript
+# typescript build cache
 *.tsbuildinfo
 
 # build archives and test scripts
 *.zip
 scratch/
-.vscode/
 test_*.mjs
