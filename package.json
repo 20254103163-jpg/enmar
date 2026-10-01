@@ -12,7 +12,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "serve": "node server.js",
-    "postinstall": "prisma generate --schema=./prisma/schema.prisma"
+    "postinstall": "prisma generate --schema=$INIT_CWD/prisma/schema.prisma"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
