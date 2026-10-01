@@ -1,0 +1,16 @@
+# cPanel Phusion Passenger & Node.js Production Configuration
+PassengerAppType node
+PassengerStartupFile server.js
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Serve Next.js static files directly
+  RewriteCond %{REQUEST_URI} ^/_next/static/.*$
+  RewriteRule ^_next/static/(.*)$ .next/static/$1 [L]
+
+  # Serve public assets directly
+  RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+  RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
