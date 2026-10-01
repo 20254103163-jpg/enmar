@@ -106,6 +106,7 @@
     },
     "expireTime": 31536000,
     "staticPageGenerationTimeout": 60,
+    "output": "standalone",
     "modularizeImports": {
       "@mui/icons-material": {
         "transform": "@mui/icons-material/{{member}}"
@@ -114,7 +115,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "C:\\Users\\Abu Hourira",
+    "outputFileTracingRoot": "C:\\Users\\Abu Hourira\\Desktop\\testing",
     "experimental": {
       "useSkewCookie": false,
       "cacheLife": {
@@ -307,11 +308,11 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.mjs",
     "turbopack": {
-      "root": "C:\\Users\\Abu Hourira"
+      "root": ""
     }
   },
-  "appDir": "C:\\Users\\Abu Hourira\\Desktop\\testing",
-  "relativeAppDir": "Desktop\\testing",
+  "appDir": "",
+  "relativeAppDir": "",
   "files": [
     ".next\\routes-manifest.json",
     ".next\\server\\pages-manifest.json",

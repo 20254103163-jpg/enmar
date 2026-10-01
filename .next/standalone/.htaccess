@@ -1,0 +1,17 @@
+# DO NOT EDIT: cPanel Node.js Application Routing
+PassengerAppType node
+PassengerStartupFile server.js
+
+# Static file serving optimization
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Serve Next.js static files directly if present
+  RewriteCond %{REQUEST_URI} ^/_next/static/.*$
+  RewriteRule ^_next/static/(.*)$ .next/static/$1 [L]
+
+  # Serve public directory assets directly
+  RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+  RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

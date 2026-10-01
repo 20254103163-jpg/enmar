@@ -42,9 +42,32 @@ try {
     fs.cpSync(prismaEnginesSrc, prismaEnginesDest, { recursive: true });
   }
 
+  // 2.5 Normalize required-server-files.json for Linux path compatibility
+  console.log('🐧 Normalizing server manifests for Linux cross-platform compatibility...');
+  const reqFilesPath = path.join(standaloneNextDir, 'required-server-files.json');
+  if (fs.existsSync(reqFilesPath)) {
+    const reqFiles = JSON.parse(fs.readFileSync(reqFilesPath, 'utf8'));
+    reqFiles.appDir = '';
+    reqFiles.relativeAppDir = '';
+    if (reqFiles.config && reqFiles.config.turbopack) {
+      reqFiles.config.turbopack.root = '';
+    }
+    if (Array.isArray(reqFiles.files)) {
+      reqFiles.files = reqFiles.files.map((f) => f.replace(/\\/g, '/'));
+    }
+    if (Array.isArray(reqFiles.ignore)) {
+      reqFiles.ignore = reqFiles.ignore.map((f) => f.replace(/\\/g, '/'));
+    }
+    fs.writeFileSync(reqFilesPath, JSON.stringify(reqFiles, null, 2));
+  }
+
   // 3. Write Phusion Passenger compatible server.js
   console.log('🚀 Generating Phusion Passenger compatible server.js...');
   const serverJsContent = `// server.js - cPanel Phusion Passenger & Node.js Selector Production Server
+if (typeof PhusionPassenger !== 'undefined') {
+  PhusionPassenger.configure({ autoInstall: false });
+}
+
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
@@ -93,7 +116,7 @@ try {
 }
 
 const app = new NextServer({
-  hostname: 'localhost',
+  hostname: '0.0.0.0',
   port: 3000,
   dir: __dirname,
   dev: false,
@@ -113,8 +136,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-// Phusion Passenger in cPanel sets process.env.PORT to a Unix socket or custom port
-const port = process.env.PORT || 3000;
+// Phusion Passenger in cPanel sets process.env.PORT to a Unix socket or custom port, or listens to 'passenger'
+const port = process.env.PORT || (typeof PhusionPassenger !== 'undefined' ? 'passenger' : 3000);
 server.listen(port, () => {
   console.log('> [ENMAR] Live Server listening on ' + port);
 });
@@ -126,7 +149,6 @@ server.listen(port, () => {
   const htaccessContent = `# DO NOT EDIT: cPanel Node.js Application Routing
 PassengerAppType node
 PassengerStartupFile server.js
-PassengerAppRoot "${process.cwd()}"
 
 # Static file serving optimization
 <IfModule mod_rewrite.c>
@@ -163,7 +185,7 @@ PassengerAppRoot "${process.cwd()}"
   }
 
   console.log('🗜️ Creating enmar_cpanel_deploy.zip (<50MB, Self-Contained)...');
-  execSync(`powershell -command "Compress-Archive -Path '.next\\standalone\\*' -DestinationPath 'enmar_cpanel_deploy.zip' -Force"`, { stdio: 'inherit' });
+  execSync(`powershell -command "Get-ChildItem -Path '.next\\standalone' -Force | Compress-Archive -DestinationPath 'enmar_cpanel_deploy.zip' -Force"`, { stdio: 'inherit' });
 
   const stats = fs.statSync(zipPath);
   const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);

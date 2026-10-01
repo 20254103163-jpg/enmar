@@ -72,8 +72,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-// In cPanel Phusion Passenger, process.env.PORT is either a string (socket path) or number.
-const port = process.env.PORT || 3000;
+// In cPanel Phusion Passenger, process.env.PORT is either a string (socket path) or number, or 'passenger'
+const port = process.env.PORT || (typeof PhusionPassenger !== "undefined" ? "passenger" : 3000);
 
 // Start listening immediately so Phusion Passenger detects the server alive without 503 timeout
 server.listen(port, () => {

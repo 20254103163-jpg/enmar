@@ -7,8 +7,8 @@
 # testing
 /coverage
 
-# next.js build output (server side e build hobe)
-/.next/
+# ignore only next build cache, but KEEP .next compiled build for cPanel Git deploy
+/.next/cache/
 
 # production
 /build
@@ -23,7 +23,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files (sensitive - never commit)
+# local env files (keep safe)
 .env*.local
 
 # editor files

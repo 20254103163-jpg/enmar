@@ -1,0 +1,65 @@
+{
+  "app\\track\\[trackingId]\\page.tsx -> @/components/storefront/LiveDeliveryMap": {
+    "id": 84051,
+    "files": [
+      "static/css/55693049b062c6a3.css",
+      "static/chunks/d0deef33.59194872e4111dca.js",
+      "static/chunks/4051.efddf2e4065194ef.js"
+    ]
+  },
+  "components\\storefront\\ClientWidgets.tsx -> @/components/storefront/CookieConsent": {
+    "id": 53725,
+    "files": [
+      "static/chunks/3725.6a988c0bace29868.js"
+    ]
+  },
+  "components\\storefront\\ClientWidgets.tsx -> @/components/storefront/DynamicFavicon": {
+    "id": 99792,
+    "files": [
+      "static/chunks/9792.c5589d625c303287.js"
+    ]
+  },
+  "components\\storefront\\ClientWidgets.tsx -> @/components/storefront/FloatingWhatsApp": {
+    "id": 89409,
+    "files": [
+      "static/chunks/9409.908a1b02543e224b.js"
+    ]
+  },
+  "components\\storefront\\ClientWidgets.tsx -> @/components/storefront/ScrollToTop": {
+    "id": 32154,
+    "files": [
+      "static/chunks/2154.faf525e23ef03778.js"
+    ]
+  },
+  "components\\storefront\\HomePageClient.tsx -> @/components/storefront/ComboDealsSlider": {
+    "id": 81929,
+    "files": [
+      "static/chunks/1929.b9aafa2b073310e3.js"
+    ]
+  },
+  "components\\storefront\\HomePageClient.tsx -> @/components/storefront/QuickViewModal": {
+    "id": 77272,
+    "files": [
+      "static/chunks/7272.ed00d329667eacda.js"
+    ]
+  },
+  "components\\storefront\\ProductCard.tsx -> @/components/storefront/QuickOrderModal": {
+    "id": 53673,
+    "files": [
+      "static/chunks/3612-423a9748ae310069.js",
+      "static/chunks/3673-b8c9a287b9413adf.js"
+    ]
+  },
+  "node_modules\\next\\dist\\client\\index.js -> ../pages/_app": {
+    "id": 45139,
+    "files": [
+      "static/chunks/5139.e4ff9cc3669129ed.js"
+    ]
+  },
+  "node_modules\\next\\dist\\client\\index.js -> ../pages/_error": {
+    "id": 31646,
+    "files": [
+      "static/chunks/1646.a93085a0445ba909.js"
+    ]
+  }
+}
