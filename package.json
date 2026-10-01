@@ -12,10 +12,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "serve": "node server.js",
-    "postinstall": "prisma generate"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "postinstall": "node scripts/postinstall.js"
   },
   "keywords": [
     "ecommerce",
