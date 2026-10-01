@@ -7,9 +7,9 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
+# next.js build cache and standalone artifact
+/.next/cache/
+/.next/standalone/
 
 # production
 /build
@@ -18,7 +18,6 @@
 # misc
 .DS_Store
 *.pem
-*.sql
 
 # debug logs
 npm-debug.log*
@@ -27,7 +26,6 @@ yarn-error.log*
 
 # local env files
 .env*.local
-.env
 .aider*
 
 # vercel
@@ -35,16 +33,9 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 # build archives and test scripts
 *.zip
 scratch/
 .vscode/
 test_*.mjs
-
-# android build cache
-android/.gradle/
-android/build/
-android/app/build/
-
