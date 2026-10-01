@@ -43,3 +43,8 @@ scratch/
 .vscode/
 test_*.mjs
 
+# android build cache
+android/.gradle/
+android/build/
+android/app/build/
+
