@@ -35,7 +35,7 @@ export default function OrderInvoicePrintPage({
 
   // Delivery Charge Quick Edit State
   const [showFeeModal, setShowFeeModal] = useState(false);
-  const [feeInput, setFeeInput] = useState<number>(60);
+  const [feeInput, setFeeInput] = useState<number>(100);
   const [isSavingFee, setIsSavingFee] = useState(false);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function OrderInvoicePrintPage({
       .then(([orderJson, settingsJson]) => {
         if (orderJson.success && orderJson.order) {
           setOrder(orderJson.order);
-          setFeeInput(Number(orderJson.order.shippingFee ?? 60));
+          setFeeInput(Number(orderJson.order.shippingFee ?? 100));
         }
         if (settingsJson.success && settingsJson.settings) setSettings(settingsJson.settings);
       })
@@ -399,11 +399,11 @@ export default function OrderInvoicePrintPage({
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-semibold text-neutral-700">কুইক প্রিসেট:</span>
               {[
+                { label: "ঢাকা ১ কেজি (৳১০০)", val: 100 },
+                { label: "ঢাকা ২ কেজি (৳১২০)", val: 120 },
+                { label: "ঢাকা ৩ কেজি (৳১৪০)", val: 140 },
+                { label: "ঢাকা বাইরে (৳১৫০)", val: 150 },
                 { label: "ফ্রি (৳০)", val: 0 },
-                { label: "ঢাকা ভেতরে (৳৬০)", val: 60 },
-                { label: "ঢাকা সিটি (৳৭০)", val: 70 },
-                { label: "ঢাকা বাইরে (৳১২০)", val: 120 },
-                { label: "সারা বাংলাদেশ (৳১৩০)", val: 130 },
               ].map((p) => (
                 <button
                   key={p.val}

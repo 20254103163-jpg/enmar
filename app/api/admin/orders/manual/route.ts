@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const deliveryZone = body.deliveryZone || "Inside Dhaka";
     const paymentMethod = (body.paymentMethod || "COD").toUpperCase() as PaymentMethod;
     const items = Array.isArray(body.items) ? body.items : [];
-    const shippingFee = Number(body.shippingFee ?? (deliveryZone === "Inside Dhaka" ? 60 : 120));
+    const shippingFee = Number(body.shippingFee ?? (deliveryZone === "Inside Dhaka" ? 100 : 150));
     const discountAmount = Number(body.discountAmount || 0);
     const customerNotes = body.customerNotes || "Social Media Order (Messenger/WhatsApp)";
     const adminNotes = body.adminNotes || "Created via /note Order Hub";

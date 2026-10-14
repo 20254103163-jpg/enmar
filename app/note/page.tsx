@@ -76,7 +76,7 @@ export default function NoteOrderHubPage() {
   const [shippingAddress, setShippingAddress] = useState("");
   const [deliveryZone, setDeliveryZone] = useState<"Inside Dhaka" | "Outside Dhaka">("Inside Dhaka");
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "BKASH" | "NAGAD" | "ROCKET">("COD");
-  const [shippingFee, setShippingFee] = useState<number>(60);
+  const [shippingFee, setShippingFee] = useState<number>(100);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [orderItems, setOrderItems] = useState<OrderItemInput[]>([]);
   const [notes, setNotes] = useState("");
@@ -185,12 +185,12 @@ export default function NoteOrderHubPage() {
     }
   };
 
-  // 4. Update Shipping fee when zone changes
+  // 4. Update Shipping fee when zone changes (Base 1kg: Inside Dhaka 100, Outside Dhaka 150)
   useEffect(() => {
     if (deliveryZone === "Inside Dhaka") {
-      setShippingFee(60);
+      setShippingFee(100);
     } else {
-      setShippingFee(120);
+      setShippingFee(150);
     }
   }, [deliveryZone]);
 
@@ -1050,7 +1050,7 @@ export default function NoteOrderHubPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* Quick Preset Buttons */}
                     <div className="flex items-center gap-1">
-                      {[60, 70, 80, 100, 120, 150, 0].map((fee) => (
+                      {[100, 120, 140, 150, 180, 200, 0].map((fee) => (
                         <button
                           key={fee}
                           type="button"
@@ -1246,7 +1246,7 @@ export default function NoteOrderHubPage() {
 
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex items-center gap-1">
-                      {[60, 70, 80, 100, 120, 150, 0].map((fee) => (
+                      {[100, 120, 140, 150, 180, 200, 0].map((fee) => (
                         <button
                           key={fee}
                           type="button"
