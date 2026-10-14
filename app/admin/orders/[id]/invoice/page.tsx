@@ -1,9 +1,19 @@
 "use client";
-// app/admin/orders/[id]/invoice/page.tsx
+// app/admin/orders/[id]/invoice/page.tsx - Single-Page High-Definition Printable & Downloadable Invoice
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Printer, ShieldCheck, Loader2, Tag } from "lucide-react";
+import {
+  ArrowLeft,
+  Printer,
+  ShieldCheck,
+  Loader2,
+  Tag,
+  Download,
+  FileDown,
+  Image as ImageIcon,
+  CheckCircle,
+} from "lucide-react";
 import { formatTaka, getSafeImageUrl } from "@/lib/utils";
 
 export default function OrderInvoicePrintPage({
@@ -15,11 +25,16 @@ export default function OrderInvoicePrintPage({
   const [order, setOrder] = useState<any | null>(null);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/admin/orders/" + id).then((res) => res.json()),
-      fetch("/api/admin/settings").then((res) => res.json()).catch(() => ({ settings: {} })),
+      fetch("/api/admin/settings")
+        .then((res) => res.json())
+        .catch(() => ({ settings: {} })),
     ])
       .then(([orderJson, settingsJson]) => {
         if (orderJson.success) setOrder(orderJson.order);
@@ -29,6 +44,100 @@ export default function OrderInvoicePrintPage({
       .finally(() => setLoading(false));
   }, [id]);
 
+  // 1. Direct High-Resolution 1-Page PDF Download (No UI buttons, strictly 1 page)
+  const handleDownloadPdf = async () => {
+    const element = document.getElementById("invoice-sheet");
+    if (!element || !order) return;
+    setIsDownloadingPdf(true);
+    setDownloadSuccess(null);
+
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+
+      // Render the invoice element at desktop/A4 width (1024px) with 2x resolution
+      const canvas = await html2canvas(element, {
+        scale: 2, // 2x scale for ultra-sharp typography
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 1024, // Prevents mobile viewport wrapping!
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      const margin = 8; // 8mm margin
+      const printableWidth = pdfWidth - margin * 2;
+      const printableHeight = pdfHeight - margin * 2;
+
+      const imgWidth = printableWidth;
+      let imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // Mathematical guarantee: scale down proportionally if height exceeds 1 page
+      if (imgHeight > printableHeight) {
+        const scaleFactor = printableHeight / imgHeight;
+        imgHeight = printableHeight;
+        const scaledWidth = imgWidth * scaleFactor;
+        const xOffset = margin + (printableWidth - scaledWidth) / 2;
+        pdf.addImage(imgData, "JPEG", xOffset, margin, scaledWidth, imgHeight);
+      } else {
+        pdf.addImage(imgData, "JPEG", margin, margin, imgWidth, imgHeight);
+      }
+
+      const fileName = `ENMAR-Invoice-${order.orderNumber || order.id}.pdf`;
+      pdf.save(fileName);
+      setDownloadSuccess("PDF ডাউনলোড সফল হয়েছে!");
+      setTimeout(() => setDownloadSuccess(null), 4000);
+    } catch (error) {
+      console.error("PDF download failed:", error);
+      // Fallback to browser print if canvas fails
+      window.print();
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  // 2. Direct High-Definition PNG Image Slip Download (for WhatsApp / Messenger sharing)
+  const handleDownloadImage = async () => {
+    const element = document.getElementById("invoice-sheet");
+    if (!element || !order) return;
+    setIsDownloadingImage(true);
+    setDownloadSuccess(null);
+
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 1024,
+      });
+
+      const link = document.createElement("a");
+      link.download = `ENMAR-Invoice-${order.orderNumber || order.id}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      setDownloadSuccess("রসিদ ছবি ডাউনলোড সফল হয়েছে!");
+      setTimeout(() => setDownloadSuccess(null), 4000);
+    } catch (err) {
+      console.error("Image download failed:", err);
+    } finally {
+      setIsDownloadingImage(false);
+    }
+  };
+
+  // 3. Native Browser Print
   const handlePrint = () => {
     window.print();
   };
@@ -36,7 +145,7 @@ export default function OrderInvoicePrintPage({
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white text-forest font-medium">
-        <Loader2 className="w-8 h-8 animate-spin mr-3" />
+        <Loader2 className="w-8 h-8 animate-spin mr-3 text-forest" />
         <span>Generating printable invoice...</span>
       </div>
     );
@@ -67,7 +176,8 @@ export default function OrderInvoicePrintPage({
       sum + (Number(it.totalPrice) || Number(it.unitPrice || 0) * Number(it.quantity || 1)),
     0
   );
-  const productsSubtotal = calculatedProductsSubtotal > 0 ? calculatedProductsSubtotal : Number(order.subtotal || 0);
+  const productsSubtotal =
+    calculatedProductsSubtotal > 0 ? calculatedProductsSubtotal : Number(order.subtotal || 0);
   const totalItemsCount = items.reduce((sum: number, it: any) => sum + Number(it.quantity || 1), 0);
 
   const deliveryCharge = Number(order.shippingFee ?? 0);
@@ -86,73 +196,164 @@ export default function OrderInvoicePrintPage({
   const isPaid = order.paymentStatus === "PAID" || (!isCOD && order.paymentStatus !== "FAILED");
 
   return (
-    <div className="min-h-screen bg-neutral-100 p-4 sm:p-6 print:p-0 print:m-0 print:bg-white text-neutral-900 font-sans">
-      {/* Strict 1-Page Print Styles */}
-      <style jsx global>{`
-        @media print {
-          @page {
-            size: A4 portrait;
-            margin: 6mm 10mm 6mm 10mm;
-          }
-          html, body {
-            height: auto !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            background: #ffffff !important;
-            color: #111827 !important;
-            font-size: 11px !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .invoice-sheet {
-            box-shadow: none !important;
-            border: none !important;
-            padding: 0 !important;
-            margin: 0 auto !important;
-            max-width: 100% !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-            page-break-after: avoid !important;
-            page-break-before: avoid !important;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
+    <div className="min-h-screen bg-neutral-100 p-3 sm:p-6 print:p-0 print:m-0 print:bg-white text-neutral-900 font-sans">
+      {/* Strict 1-Page Print Stylesheet injected into DOM */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media print {
+              @page {
+                size: A4 portrait;
+                margin: 4mm 8mm 4mm 8mm;
+              }
+              *, *::before, *::after {
+                box-sizing: border-box !important;
+              }
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                color: #111827 !important;
+                font-size: 10px !important;
+                line-height: 1.25 !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              /* Hide all top action bars, buttons, and navigation */
+              .no-print, header, nav, button, a.no-print-link {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              /* Isolate the invoice sheet */
+              #invoice-sheet {
+                box-shadow: none !important;
+                border: 1px solid #d1d5db !important;
+                border-radius: 12px !important;
+                padding: 14px 18px !important;
+                margin: 0 auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
+                background: #ffffff !important;
+              }
+              /* Force side-by-side layout in print regardless of screen viewport width */
+              .print-side-by-side {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+                gap: 16px !important;
+              }
+              .print-col-2 {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 16px !important;
+              }
+            }
+          `,
+        }}
+      />
 
-      {/* Top Action Bar (Hidden on Print) */}
-      <div className="max-w-3xl mx-auto mb-4 flex items-center justify-between no-print print:hidden">
-        <Link
-          href={'/admin/orders/' + order.id}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-neutral-300 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 shadow-xs"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Order Details</span>
-        </Link>
-
-        <div className="flex items-center gap-2">
+      {/* Top Action Bar (Completely Hidden on Print & PDF Download) */}
+      <div className="max-w-3xl mx-auto mb-4 no-print space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 bg-white p-3 rounded-2xl shadow-xs border border-neutral-200">
           <Link
-            href={`/admin/orders/${order.id}/label`}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-forest/30 bg-forest-soft text-forest hover:bg-forest hover:text-white text-xs font-bold transition-all shadow-xs"
+            href={"/admin/orders/" + order.id}
+            className="no-print-link inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-xs font-semibold text-neutral-700 transition-colors"
           >
-            <Tag className="w-4 h-4" />
-            <span>Shipping Label (2&quot;&times;3&quot;)</span>
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Back to Order</span>
+            <span className="sm:hidden">Back</span>
           </Link>
 
-          <button
-            onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-forest hover:bg-forest-deep text-white text-xs font-bold shadow-md transition-all hover:scale-105 cursor-pointer"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Print / Save as 1-Page PDF</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <Link
+              href={`/admin/orders/${order.id}/label`}
+              className="no-print-link inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-forest/20 bg-forest-soft text-forest hover:bg-forest hover:text-white text-xs font-bold transition-all"
+              title="2x3 Thermal Sticker Label"
+            >
+              <Tag className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Label (2&quot;&times;3&quot;)</span>
+              <span className="sm:hidden">Label</span>
+            </Link>
+
+            {/* Direct 1-Page PDF Download (Solves Mobile 2-Page / Screenshot Issue) */}
+            <button
+              onClick={handleDownloadPdf}
+              disabled={isDownloadingPdf}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-forest hover:bg-forest-deep text-white text-xs font-bold shadow-sm transition-all disabled:opacity-70 cursor-pointer"
+              title="Download pure 1-page A4 PDF without buttons"
+            >
+              {isDownloadingPdf ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <FileDown className="w-3.5 h-3.5" />
+              )}
+              <span>{isDownloadingPdf ? "তৈরি হচ্ছে..." : "Download PDF (১ পৃষ্ঠা)"}</span>
+            </button>
+
+            {/* PNG Image Download for WhatsApp/Messenger sharing */}
+            <button
+              onClick={handleDownloadImage}
+              disabled={isDownloadingImage}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-800 text-xs font-bold shadow-xs transition-all disabled:opacity-70 cursor-pointer"
+              title="Download clean image for WhatsApp/Messenger"
+            >
+              {isDownloadingImage ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <ImageIcon className="w-3.5 h-3.5 text-neutral-600" />
+              )}
+              <span className="hidden sm:inline">
+                {isDownloadingImage ? "সেভ হচ্ছে..." : "রসিদ ছবি (PNG)"}
+              </span>
+              <span className="sm:hidden">ছবি (PNG)</span>
+            </button>
+
+            {/* Native Browser Print */}
+            <button
+              onClick={handlePrint}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-neutral-300 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+              title="Print via browser"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Print</span>
+            </button>
+          </div>
         </div>
+
+        {/* Mobile-Friendly Helper Tip & Download Success Banner */}
+        {downloadSuccess ? (
+          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium animate-fadeIn">
+            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{downloadSuccess} ফাইলটি আপনার ডিভাইসে সংরক্ষিত হয়েছে।</span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between text-[11px] text-neutral-500 px-2 py-0.5">
+            <span>
+              💡 <strong>টিপস:</strong> ফোনে ১ পেজের নিখুঁত ইনভয়েস পেতে{" "}
+              <strong className="text-forest">Download PDF</strong> বাটনে চাপ দিন — কোনো বাটন বা
+              স্ক্রিনশটের অংশ আসবে না।
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Invoice Document Sheet (1-Page Fitted) */}
-      <div className="invoice-sheet max-w-3xl mx-auto bg-white p-6 sm:p-8 rounded-3xl shadow-xl print:shadow-none border border-neutral-200 print:border-none space-y-4">
-        {/* Header: Logo & Invoice Details */}
+      {/* Invoice Document Sheet (Strictly 1-Page Fitted, Target for PDF & Print) */}
+      <div
+        id="invoice-sheet"
+        className="invoice-sheet max-w-3xl mx-auto bg-white p-5 sm:p-7 rounded-2xl shadow-md print:shadow-none border border-neutral-200 print:border-neutral-300 space-y-3.5"
+      >
+        {/* Header: Logo & Invoice Metadata */}
         <div className="flex items-start justify-between border-b-2 border-neutral-900 pb-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
@@ -162,11 +363,12 @@ export default function OrderInvoicePrintPage({
                   <img
                     src={getSafeImageUrl(brandLogo)}
                     alt={brandName}
+                    crossOrigin="anonymous"
                     className="w-full h-full object-contain"
                   />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-xl bg-forest text-white font-bold flex items-center justify-center text-lg font-display">
+                <div className="w-9 h-9 rounded-xl bg-forest text-white font-bold flex items-center justify-center text-lg font-display">
                   E
                 </div>
               )}
@@ -190,11 +392,16 @@ export default function OrderInvoicePrintPage({
             <span className="inline-block px-2.5 py-0.5 bg-forest-soft text-forest text-[10px] font-bold font-mono rounded">
               INVOICE / PACKING SLIP
             </span>
-            <h2 className="text-base font-bold font-mono text-neutral-900">
+            <h2 className="text-base font-bold font-mono text-neutral-900 leading-tight">
               #{order.orderNumber}
             </h2>
             <p className="text-[10px] text-neutral-500 font-mono">
-              Date: {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              Date:{" "}
+              {new Date(order.createdAt).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
             </p>
             <p className="text-[10px] text-neutral-500 font-mono">
               Tracking: <strong>{order.trackingId}</strong>
@@ -202,18 +409,20 @@ export default function OrderInvoicePrintPage({
           </div>
         </div>
 
-        {/* 2-Column Addresses */}
-        <div className="grid grid-cols-2 gap-6 py-1 text-xs">
+        {/* 2-Column Addresses (Delivery To + Payment/Logistics) */}
+        <div className="grid grid-cols-2 print-col-2 gap-4 py-0.5 text-xs">
           {/* Bill & Ship To */}
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block">
               Deliver To (Customer)
             </span>
-            <h3 className="font-bold text-sm text-neutral-900 leading-tight">{order.customerName}</h3>
-            <p className="text-xs text-neutral-700 font-mono">{order.customerPhone}</p>
-            <p className="text-[11px] text-neutral-600 leading-snug">
-              {order.shippingAddress}
+            <h3 className="font-bold text-sm text-neutral-900 leading-tight">
+              {order.customerName}
+            </h3>
+            <p className="text-xs text-neutral-800 font-mono font-semibold">
+              {order.customerPhone}
             </p>
+            <p className="text-[11px] text-neutral-600 leading-snug">{order.shippingAddress}</p>
             <span className="inline-block text-[10px] font-semibold text-forest bg-forest-soft px-1.5 py-0.5 rounded">
               {order.deliveryZone || "Inside Dhaka"}
             </span>
@@ -227,7 +436,7 @@ export default function OrderInvoicePrintPage({
           {/* Logistics & Payment */}
           <div className="space-y-1 text-right">
             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block">
-              Payment & Logistics
+              Payment &amp; Logistics
             </span>
             <p className="text-[11px] text-neutral-800">
               Payment Method: <strong>{order.paymentMethod}</strong>
@@ -288,19 +497,22 @@ export default function OrderInvoicePrintPage({
                 );
               })}
             </tbody>
-            {/* Table Footer: Clearly itemizing Total Quantity and Products Subtotal */}
+            {/* Table Footer: Itemizing Total Quantity and Products Subtotal */}
             <tfoot className="bg-neutral-50 border-t-2 border-neutral-300 text-neutral-900 font-semibold">
               <tr>
-                <td colSpan={3} className="py-2 px-3 text-right text-[10px] font-mono text-neutral-600 uppercase">
+                <td
+                  colSpan={3}
+                  className="py-1.5 px-3 text-right text-[10px] font-mono text-neutral-600 uppercase"
+                >
                   Total Items:
                 </td>
-                <td className="py-2 px-3 text-center font-mono font-bold text-[11px]">
+                <td className="py-1.5 px-3 text-center font-mono font-bold text-[11px]">
                   {totalItemsCount}
                 </td>
-                <td className="py-2 px-3 text-right text-[10px] font-mono text-neutral-600 uppercase">
+                <td className="py-1.5 px-3 text-right text-[10px] font-mono text-neutral-600 uppercase">
                   Products Subtotal:
                 </td>
-                <td className="py-2 px-3 text-right font-mono font-bold text-neutral-900 text-[11px]">
+                <td className="py-1.5 px-3 text-right font-mono font-bold text-neutral-900 text-[11px]">
                   {formatTaka(productsSubtotal)}
                 </td>
               </tr>
@@ -309,9 +521,9 @@ export default function OrderInvoicePrintPage({
         </div>
 
         {/* Calculation Summary Breakdown: Separate Product Price & Delivery Charge */}
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pt-1">
+        <div className="flex flex-col sm:flex-row print-side-by-side justify-between items-start gap-3 pt-0.5">
           {/* Payment & Collection Summary */}
-          <div className="w-full sm:max-w-xs border border-neutral-200 rounded-xl p-3 bg-neutral-50/70 text-[11px] space-y-1.5">
+          <div className="w-full sm:max-w-xs border border-neutral-200 rounded-xl p-2.5 bg-neutral-50/80 text-[11px] space-y-1">
             <span className="font-bold uppercase tracking-wider text-neutral-600 text-[9px] block">
               Payment &amp; Collection Summary
             </span>
@@ -329,7 +541,7 @@ export default function OrderInvoicePrintPage({
                 {order.paymentStatus}
               </span>
             </div>
-            <div className="pt-1.5 border-t border-neutral-200 flex justify-between items-center">
+            <div className="pt-1 border-t border-neutral-200 flex justify-between items-center">
               <span className="font-semibold text-neutral-700">
                 {isCOD ? "Cash to Collect (COD):" : "Amount Paid:"}
               </span>
@@ -349,7 +561,7 @@ export default function OrderInvoicePrintPage({
           </div>
 
           {/* Right Side: Exact Financial Calculation Breakdown */}
-          <div className="w-full sm:w-72 bg-neutral-50/50 border border-neutral-200 rounded-xl p-3 space-y-1.5 text-xs">
+          <div className="w-full sm:w-72 bg-neutral-50/60 border border-neutral-200 rounded-xl p-2.5 space-y-1 text-xs">
             {/* 1. Products Price Subtotal */}
             <div className="flex justify-between text-neutral-700 text-[11px]">
               <span className="font-medium">Products Price (পণ্যের মূল্য):</span>
@@ -389,7 +601,7 @@ export default function OrderInvoicePrintPage({
             )}
 
             {/* 5. Net Payable Total */}
-            <div className="flex justify-between text-sm font-bold text-neutral-900 pt-2 border-t-2 border-neutral-900">
+            <div className="flex justify-between text-sm font-bold text-neutral-900 pt-1.5 border-t-2 border-neutral-900">
               <span className="text-forest font-display">Net Payable Total:</span>
               <span className="font-mono text-forest text-base">{formatTaka(grandTotal)}</span>
             </div>
@@ -397,10 +609,10 @@ export default function OrderInvoicePrintPage({
         </div>
 
         {/* Footer Notes & Guarantee */}
-        <div className="border-t border-neutral-200 pt-3 flex items-center justify-between text-[10px] text-neutral-500">
+        <div className="border-t border-neutral-200 pt-2.5 flex items-center justify-between text-[10px] text-neutral-500">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-forest" />
-            <span>100% Certified Organic & Unadulterated Food Guarantee.</span>
+            <span>100% Certified Organic &amp; Unadulterated Food Guarantee.</span>
           </div>
           <div className="font-mono text-[10px] font-semibold">
             Thank you for choosing {brandName}!

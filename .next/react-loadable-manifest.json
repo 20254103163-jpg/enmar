@@ -1,4 +1,18 @@
 {
+  "app\\admin\\orders\\[id]\\invoice\\page.tsx -> html2canvas": {
+    "id": 54264,
+    "files": [
+      "static/chunks/ad2866b8.e13a3cf75ccf0eb8.js"
+    ]
+  },
+  "app\\admin\\orders\\[id]\\invoice\\page.tsx -> jspdf": {
+    "id": 55172,
+    "files": [
+      "static/chunks/2f0b94e8.3546553bea173845.js",
+      "static/chunks/164f4fb6.ce92363ea1891027.js",
+      "static/chunks/6241.6c62f1d1123f6016.js"
+    ]
+  },
   "app\\track\\[trackingId]\\page.tsx -> @/components/storefront/LiveDeliveryMap": {
     "id": 84051,
     "files": [
@@ -48,6 +62,25 @@
     "files": [
       "static/chunks/3612-423a9748ae310069.js",
       "static/chunks/3673-b8c9a287b9413adf.js"
+    ]
+  },
+  "node_modules\\jspdf\\dist\\jspdf.es.min.js -> canvg": {
+    "id": 11482,
+    "files": [
+      "static/chunks/bc98253f.d6fc8a0138855acd.js",
+      "static/chunks/4199.731f72ee4e743ee7.js"
+    ]
+  },
+  "node_modules\\jspdf\\dist\\jspdf.es.min.js -> dompurify": {
+    "id": 82931,
+    "files": [
+      "static/chunks/2931.0a8a370bed3c87d1.js"
+    ]
+  },
+  "node_modules\\jspdf\\dist\\jspdf.es.min.js -> html2canvas": {
+    "id": 54264,
+    "files": [
+      "static/chunks/ad2866b8.e13a3cf75ccf0eb8.js"
     ]
   },
   "node_modules\\next\\dist\\client\\index.js -> ../pages/_app": {
