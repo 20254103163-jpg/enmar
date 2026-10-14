@@ -48,12 +48,14 @@ function OrderTrackingDetailContent({
   const { t, locale } = useLanguage();
 
   const STAGES = [
-    { key: "PENDING", label: t("track.stagePending"), desc: "Awaiting confirmation" },
-    { key: "CONFIRMED", label: t("track.stageConfirmed"), desc: "Verified with customer" },
-    { key: "PACKED", label: t("track.stagePacked"), desc: "Fresh organic items sealed" },
-    { key: "SHIPPED", label: t("track.stageShipped"), desc: "Handed over to courier" },
-    { key: "OUT_FOR_DELIVERY", label: t("track.stageOutForDelivery"), desc: "Rider on the way" },
-    { key: "DELIVERED", label: t("track.stageDelivered"), desc: "Delivered successfully" },
+    { key: "PENDING", label: locale === "bn" ? "অপেক্ষমান" : "Pending", desc: "Awaiting confirmation" },
+    { key: "CONFIRMED", label: locale === "bn" ? "নিশ্চিত" : "Confirmed", desc: "Verified with customer" },
+    { key: "PROCESSING", label: locale === "bn" ? "প্রক্রিয়াধীন" : "Processing", desc: "Order queued & in processing" },
+    { key: "MAKING", label: locale === "bn" ? "তৈরি হচ্ছে" : "Making", desc: "Freshly preparing & crafting" },
+    { key: "PACKED", label: locale === "bn" ? "প্যাকিং সম্পন্ন" : "Packed", desc: "Fresh organic items sealed" },
+    { key: "SHIPPED", label: locale === "bn" ? "শিপিং সম্পন্ন" : "Shipped", desc: "Handed over to courier" },
+    { key: "OUT_FOR_DELIVERY", label: locale === "bn" ? "ডেলিভারির পথে" : "Out for Delivery", desc: "Rider on the way" },
+    { key: "DELIVERED", label: locale === "bn" ? "ডেলিভারি সম্পন্ন" : "Delivered", desc: "Delivered successfully" },
   ];
 
   const [order, setOrder] = useState<any | null>(null);
@@ -369,7 +371,7 @@ function OrderTrackingDetailContent({
 
             <div className="relative">
               {/* Desktop Stepper */}
-              <div className="hidden sm:grid grid-cols-6 gap-2 relative">
+              <div className="hidden sm:grid grid-cols-4 md:grid-cols-8 gap-2 relative">
                 {/* Connecting Line */}
                 <div className="absolute top-4 left-6 right-6 h-0.5 bg-line -z-0" />
                 <div

@@ -110,8 +110,14 @@ export default function CustomerOrdersPage() {
                               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${
                                 o.orderStatus === "DELIVERED"
                                   ? "bg-emerald-100 text-emerald-800"
+                                  : o.orderStatus === "PROCESSING"
+                                  ? "bg-teal-100 text-teal-800"
+                                  : o.orderStatus === "MAKING"
+                                  ? "bg-orange-100 text-orange-800"
                                   : o.orderStatus === "SHIPPED" || o.orderStatus === "OUT_FOR_DELIVERY"
                                   ? "bg-blue-100 text-blue-800"
+                                  : o.orderStatus === "CANCELLED"
+                                  ? "bg-rose-100 text-rose-800"
                                   : "bg-amber-100 text-amber-800"
                               }`}
                             >

@@ -418,14 +418,16 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                   onChange={(e) => setOrderStatus(e.target.value as OrderStatus)}
                   className="w-full px-4 py-2.5 rounded-xl bg-bg border border-line text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-forest/20"
                 >
-                  <option value="PENDING">Pending</option>
-                  <option value="CONFIRMED">Confirmed</option>
-                  <option value="PACKED">Packed</option>
+                  <option value="PENDING">Pending (অপেক্ষমান)</option>
+                  <option value="CONFIRMED">Confirmed (নিশ্চিত)</option>
+                  <option value="PROCESSING">Processing (প্রক্রিয়াকরণ হচ্ছে)</option>
+                  <option value="MAKING">Making (তৈরি হচ্ছে)</option>
+                  <option value="PACKED">Packed (প্যাকিং সম্পন্ন)</option>
                   <option value="SHIPPED">Shipped (Handed to Courier)</option>
-                  <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
-                  <option value="DELIVERED">Delivered</option>
-                  <option value="CANCELLED">Cancelled</option>
-                  <option value="RETURNED">Returned</option>
+                  <option value="OUT_FOR_DELIVERY">Out for Delivery (ডেলিভারির পথে)</option>
+                  <option value="DELIVERED">Delivered (ডেলিভারি সম্পন্ন)</option>
+                  <option value="CANCELLED">Cancelled (বাতিল)</option>
+                  <option value="RETURNED">Returned (রিটার্ন)</option>
                 </select>
               </div>
 

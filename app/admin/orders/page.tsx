@@ -312,6 +312,8 @@ export default function AdminOrdersPage() {
             { key: "AI_ORDERS", label: "🤖 AI Orders" },
             { key: "PENDING", label: "Pending" },
             { key: "CONFIRMED", label: "Confirmed" },
+            { key: "PROCESSING", label: "Processing" },
+            { key: "MAKING", label: "Making" },
             { key: "PACKED", label: "Packed" },
             { key: "SHIPPED", label: "Shipped" },
             { key: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
@@ -680,6 +682,8 @@ export default function AdminOrdersPage() {
                 >
                   <option value="PENDING">PENDING (অপেক্ষমান)</option>
                   <option value="CONFIRMED">CONFIRMED (নিশ্চিত)</option>
+                  <option value="PROCESSING">PROCESSING (প্রক্রিয়াকরণ হচ্ছে)</option>
+                  <option value="MAKING">MAKING (তৈরি হচ্ছে)</option>
                   <option value="PACKED">PACKED (প্যাকিং সম্পন্ন)</option>
                   <option value="SHIPPED">SHIPPED (কুরিয়ারে হস্তান্তর)</option>
                   <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (ডেলিভারির পথে)</option>

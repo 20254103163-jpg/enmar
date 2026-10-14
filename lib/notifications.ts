@@ -320,6 +320,8 @@ export async function notifyOrderStatusChanged(
 
   let statusText = newStatus;
   if (newStatus === "CONFIRMED") statusText = "Verified & Confirmed";
+  if (newStatus === "PROCESSING") statusText = "Processing in Queue (প্রক্রিয়াধীন)";
+  if (newStatus === "MAKING") statusText = "Making / Freshly Preparing (তৈরি হচ্ছে)";
   if (newStatus === "PACKED") statusText = "Freshly Packed at Warehouse";
   if (newStatus === "SHIPPED") statusText = `Handed over to ${order.courierPartner || "Courier"} Logistics`;
   if (newStatus === "OUT_FOR_DELIVERY") statusText = "Out for Delivery with Rider";

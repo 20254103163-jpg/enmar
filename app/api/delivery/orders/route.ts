@@ -42,6 +42,8 @@ export async function GET() {
     const activeOrders = assignedOrders.filter(
       (o) =>
         o.orderStatus === "CONFIRMED" ||
+        o.orderStatus === "PROCESSING" ||
+        o.orderStatus === "MAKING" ||
         o.orderStatus === "PACKED" ||
         o.orderStatus === "SHIPPED" ||
         o.orderStatus === "OUT_FOR_DELIVERY"

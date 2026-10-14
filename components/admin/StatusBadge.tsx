@@ -21,6 +21,18 @@ export default function StatusBadge({ status, size = "md" }: StatusBadgeProps) {
       dot: "bg-blue-500",
       label: "Confirmed",
     },
+    PROCESSING: {
+      bg: "bg-teal-50 border-teal-200",
+      text: "text-teal-800",
+      dot: "bg-teal-500",
+      label: "Processing",
+    },
+    MAKING: {
+      bg: "bg-orange-50 border-orange-200",
+      text: "text-orange-800",
+      dot: "bg-orange-500",
+      label: "Making",
+    },
     PACKED: {
       bg: "bg-indigo-50 border-indigo-200",
       text: "text-indigo-800",
