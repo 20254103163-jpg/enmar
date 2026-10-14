@@ -143,8 +143,7 @@ export default function CheckoutPage() {
                   shippingAddress: `${defaultAddr.streetAddress}, ${
                     defaultAddr.area ? defaultAddr.area + ", " : ""
                   }${defaultAddr.city}`,
-                  deliveryZone:
-                    defaultAddr.city === "Dhaka" ? "Inside Dhaka" : "Outside Dhaka",
+                  deliveryZone: "Inside Dhaka",
                 }));
               }
             }
@@ -163,7 +162,7 @@ export default function CheckoutPage() {
       shippingAddress: `${addr.streetAddress}, ${
         addr.area ? addr.area + ", " : ""
       }${addr.city}`,
-      deliveryZone: addr.city === "Dhaka" ? "Inside Dhaka" : "Outside Dhaka",
+      deliveryZone: "Inside Dhaka",
     }));
   };
 
@@ -174,9 +173,9 @@ export default function CheckoutPage() {
   const discountAmount =
     appliedPromo && !isPromoFreeShipping ? Number(appliedPromo.discountAmount || 0) : 0;
 
-  // Zone adjustment (Outside Dhaka standard courier extra fee when not free shipping)
-  const isOutsideDhaka = formData.deliveryZone === "Outside Dhaka";
-  const zoneAdjustment = isOutsideDhaka && !isPromoFreeShipping && deliveryFee > 0 ? 50 : 0;
+  // Delivery Zone: Currently service is strictly limited to Inside Dhaka
+  const isOutsideDhaka = false;
+  const zoneAdjustment = 0;
 
   // Selected Delivery Slot
   const selectedSlot = deliverySlots.find((s) => s.id === selectedSlotId) || deliverySlots[0];
@@ -239,6 +238,20 @@ export default function CheckoutPage() {
             : "Please sign in or register to place your order.",
         type: "warning",
         onConfirm: () => router.push("/auth/login?callbackUrl=/checkout"),
+      });
+      return;
+    }
+
+    // Enforcement: Delivery is strictly inside Dhaka
+    if (formData.deliveryZone === "Outside Dhaka") {
+      setAlertState({
+        isOpen: true,
+        title: locale === "bn" ? "ডেলিভারি এলাকা সংক্রান্ত" : "Delivery Service Area",
+        message:
+          locale === "bn"
+            ? "খাবারের বিশুদ্ধ মান ও সর্বোচ্চ সতেজতা বজায় রাখতে আপাতত আমাদের হোম ডেলিভারি সেবা শুধুমাত্র ঢাকা সিটির ভেতরে চালু রয়েছে।"
+            : "Currently, our delivery service is strictly available inside Dhaka City only.",
+        type: "warning",
       });
       return;
     }
@@ -500,23 +513,19 @@ export default function CheckoutPage() {
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label
-                    className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                      formData.deliveryZone === "Inside Dhaka"
-                        ? "border-forest bg-emerald-50/60 ring-1 ring-forest"
-                        : "border-stone-200 hover:border-stone-300 bg-stone-50/50"
-                    }`}
+                    className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all border-forest bg-emerald-50/60 ring-1 ring-forest`}
                   >
                     <div className="flex items-center gap-2.5">
                       <input
                         type="radio"
                         name="deliveryZone"
-                        checked={formData.deliveryZone === "Inside Dhaka"}
-                        onChange={() => setFormData({ ...formData, deliveryZone: "Inside Dhaka" })}
+                        checked={true}
+                        readOnly
                         className="w-4 h-4 text-forest"
                       />
                       <div>
                         <span className="text-xs font-bold text-stone-900 block">
-                          {locale === "bn" ? "ঢাকার ভেতরে" : "Inside Dhaka"}
+                          {locale === "bn" ? "ঢাকা সিটির ভেতরে (Inside Dhaka)" : "Inside Dhaka City"}
                         </span>
                         <span className="text-[11px] text-stone-500 font-mono block mt-0.5">
                           {deliveryFee === 0 ? "ফ্রি ডেলিভারি" : `চার্জ: ${formatTaka(deliveryFee)}`}
@@ -531,37 +540,50 @@ export default function CheckoutPage() {
                     </div>
                   </label>
 
-                  <label
-                    className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                      formData.deliveryZone === "Outside Dhaka"
-                        ? "border-forest bg-emerald-50/60 ring-1 ring-forest"
-                        : "border-stone-200 hover:border-stone-300 bg-stone-50/50"
-                    }`}
+                  {/* Outside Dhaka - Disabled with informative notice */}
+                  <div
+                    className="p-3.5 rounded-xl border border-dashed border-stone-300 bg-stone-100/70 flex items-center justify-between cursor-not-allowed opacity-75"
+                    title="আপাতত ঢাকার বাইরে ডেলিভারি সেবা বন্ধ রয়েছে"
                   >
                     <div className="flex items-center gap-2.5">
                       <input
                         type="radio"
                         name="deliveryZone"
-                        checked={formData.deliveryZone === "Outside Dhaka"}
-                        onChange={() => setFormData({ ...formData, deliveryZone: "Outside Dhaka" })}
-                        className="w-4 h-4 text-forest"
+                        disabled
+                        checked={false}
+                        className="w-4 h-4 text-stone-400 cursor-not-allowed"
                       />
                       <div>
-                        <span className="text-xs font-bold text-stone-900 block">
-                          {locale === "bn" ? "ঢাকার বাইরে" : "Outside Dhaka"}
-                        </span>
-                        <span className="text-[11px] text-stone-500 font-mono block mt-0.5">
-                          {deliveryFee === 0 ? "ফ্রি ডেলিভারি" : `চার্জ: ${formatTaka(deliveryFee + 50)}`}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-stone-600">
+                            {locale === "bn" ? "ঢাকার বাইরে" : "Outside Dhaka"}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                            আপাতত বন্ধ
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-stone-500 block mt-0.5">
+                          {locale === "bn"
+                            ? "শুধুমাত্র ঢাকা সিটির ভেতরে চালু রয়েছে"
+                            : "Service limited to Dhaka City only"}
                         </span>
                       </div>
                     </div>
-                    <div className="text-right flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-xs text-forest">
-                        {deliveryFee === 0 ? "ফ্রি" : formatTaka(deliveryFee + 50)}
+                    <div className="text-right">
+                      <span className="text-[11px] font-medium text-stone-400">
+                        {locale === "bn" ? "উপলব্ধ নয়" : "Unavailable"}
                       </span>
-                      <Truck className="w-4 h-4 text-forest" />
                     </div>
-                  </label>
+                  </div>
+                </div>
+
+                {/* Important notice alert */}
+                <div className="mt-2.5 p-2.5 rounded-xl bg-amber-50/90 border border-amber-200/80 flex items-start gap-2 text-[11px] text-amber-900">
+                  <span className="text-sm leading-none mt-0.5">🚚</span>
+                  <div>
+                    <span className="font-bold">ডেলিভারি এলাকা সংক্রান্ত নোটিশ: </span>
+                    <span>আমাদের খাবারের বিশুদ্ধ মান ও সর্বোচ্চ সতেজতা নিশ্চিত করতে আপাতত হোম ডেলিভারি সেবা শুধুমাত্র ঢাকা সিটির ভেতরে চালু রয়েছে। ঢাকার বাইরে কোনো ডেলিভারি সেবা নেই।</span>
+                  </div>
                 </div>
               </div>
 

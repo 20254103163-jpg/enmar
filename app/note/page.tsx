@@ -185,13 +185,9 @@ export default function NoteOrderHubPage() {
     }
   };
 
-  // 4. Update Shipping fee when zone changes (Base 1kg: Inside Dhaka 100, Outside Dhaka 150)
+  // 4. Update Shipping fee (Base 1kg: Inside Dhaka 100)
   useEffect(() => {
-    if (deliveryZone === "Inside Dhaka") {
-      setShippingFee(100);
-    } else {
-      setShippingFee(150);
-    }
+    setShippingFee(100);
   }, [deliveryZone]);
 
   // 5. Intelligent NLP & Regex Parser
@@ -373,7 +369,11 @@ export default function NoteOrderHubPage() {
     if (parsedAddress) setShippingAddress(parsedAddress);
     setDeliveryZone(detectedZone);
 
-    if (matchedItems.length > 0) {
+    if (detectedZone === "Outside Dhaka") {
+      setParseSuccessMsg(
+        `⚠️ সতর্কতা: কাস্টমারের ঠিকানা ঢাকার বাইরে সনাক্ত হয়েছে। মনে রাখবেন: খাবারের সতেজতা বজায় রাখতে আপাতত আমাদের কোনো ডেলিভারি সেবা ঢাকার বাইরে নেই (শুধুমাত্র ঢাকা সিটির ভেতরে চালু রয়েছে)!`
+      );
+    } else if (matchedItems.length > 0) {
       // Deduplicate matched items by productId
       const uniqueMap = new Map<number, OrderItemInput>();
       matchedItems.forEach((it) => {
@@ -828,7 +828,7 @@ export default function NoteOrderHubPage() {
               <div className="p-3.5 rounded-2xl bg-stone-950/60 border border-stone-800/80 text-[11px] text-stone-400 space-y-1">
                 <strong className="text-amber-400/90 block">💡 পার্সারের টিপস:</strong>
                 <p>• কাস্টমারের ফোন নম্বর (01X...), নাম ও ঠিকানা টেক্সট থেকে নিজে নিজেই আলাদা করে নেবে।</p>
-                <p>• ঠিকানা ঢাকা হলে ডেলিভারি ৬০৳ এবং ঢাকার বাইরে হলে ১২০৳ স্বয়ংক্রিয়ভাবে নির্ধারণ হবে।</p>
+                <p>• ডেলিভারি চার্জ: ঢাকা সিটির ভেতরে ১০০৳ (প্রতি অতিরিক্ত কেজিতে ২০৳)। ঢাকার বাইরে আপাতত ডেলিভারি সেবা বন্ধ।</p>
               </div>
             </div>
 
@@ -907,8 +907,8 @@ export default function NoteOrderHubPage() {
                     onChange={(e) => setDeliveryZone(e.target.value as any)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-stone-950 border border-stone-800 text-white text-xs sm:text-sm focus:outline-none focus:border-amber-500 transition-colors cursor-pointer"
                   >
-                    <option value="Inside Dhaka">ঢাকার ভিতরে (৬০ ৳)</option>
-                    <option value="Outside Dhaka">ঢাকার বাইরে (১২০ ৳)</option>
+                    <option value="Inside Dhaka">ঢাকা সিটির ভেতরে (১০০ ৳)</option>
+                    <option value="Outside Dhaka" disabled>ঢাকার বাইরে — আপাতত সেবা বন্ধ</option>
                   </select>
                 </div>
 
@@ -1180,8 +1180,8 @@ export default function NoteOrderHubPage() {
                     onChange={(e) => setDeliveryZone(e.target.value as any)}
                     className="w-full px-4 py-2.5 rounded-xl bg-stone-950 border border-stone-800 text-white text-sm focus:outline-none focus:border-amber-500"
                   >
-                    <option value="Inside Dhaka">ঢাকার ভিতরে (৬০ ৳)</option>
-                    <option value="Outside Dhaka">ঢাকার বাইরে (১২০ ৳)</option>
+                    <option value="Inside Dhaka">ঢাকা সিটির ভেতরে (১০০ ৳)</option>
+                    <option value="Outside Dhaka" disabled>ঢাকার বাইরে — আপাতত সেবা বন্ধ</option>
                   </select>
                 </div>
                 <div className="space-y-1">

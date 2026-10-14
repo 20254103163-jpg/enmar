@@ -34,6 +34,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Strict service area rule: Delivery is strictly limited to Inside Dhaka
+    if (deliveryZone === "Outside Dhaka") {
+      return NextResponse.json(
+        { error: "খাবারের বিশুদ্ধ মান ও সর্বোচ্চ সতেজতা বজায় রাখতে আপাতত আমাদের হোম ডেলিভারি সেবা শুধুমাত্র ঢাকা সিটির ভেতরে চালু রয়েছে। ঢাকার বাইরে কোনো সার্ভিস নেই।" },
+        { status: 400 }
+      );
+    }
+
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: "আপনার কার্টে কোনো পণ্য নেই। অর্ডার করতে কার্টে পণ্য যোগ করুন।" },

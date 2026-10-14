@@ -72,9 +72,9 @@ export default function QuickOrderModal({ product, isOpen, onClose }: QuickOrder
   const chutneyPrice = includeChutney ? 50 : 0;
   const subtotal = unitPrice * quantity + chutneyPrice;
 
-  // Delivery calculation: Free delivery if 3+ items or ৳800+
+  // Delivery calculation: Inside Dhaka ৳100 base fee (Free delivery if 3+ items or ৳800+)
   const isFreeDelivery = quantity >= 3 || subtotal >= 800;
-  const deliveryFee = isFreeDelivery ? 0 : deliveryZone === "Inside Dhaka" ? 70 : 130;
+  const deliveryFee = isFreeDelivery ? 0 : 100;
   const grandTotal = subtotal + deliveryFee;
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
@@ -131,7 +131,7 @@ export default function QuickOrderModal({ product, isOpen, onClose }: QuickOrder
         customerPhone: customerPhone.trim(),
         customerEmail: "quick-order@enmar.bd",
         shippingAddress: shippingAddress.trim(),
-        deliveryZone,
+        deliveryZone: "Inside Dhaka",
         paymentMethod: "COD",
         customerNotes: `⚡ ১-ক্লিক ঝটপট ফ্রোজেন ফুড অর্ডার${includeChutney ? " (সাথে স্পেশাল চাটনি)" : ""}`,
         subtotal,
@@ -166,7 +166,7 @@ export default function QuickOrderModal({ product, isOpen, onClose }: QuickOrder
       `📦 *পণ্য:* ${product.name} (${quantity}টি প্যাক)\n` +
       (includeChutney ? `🥟 *অ্যাড-অন:* স্পেশাল চাটনি (৳৫০)\n` : "") +
       `💰 *মোট বিল:* ${formatTaka(grandTotal)} (ক্যাশ অন ডেলিভারি)\n` +
-      `📍 *ডেলিভারি এলাকা:* ${deliveryZone === "Inside Dhaka" ? "ঢাকা সিটির ভেতরে (৳৭০)" : "ঢাকার বাইরে (৳১৩০)"}\n` +
+      `📍 *ডেলিভারি এলাকা:* ঢাকা সিটির ভেতরে (${isFreeDelivery ? "ফ্রি" : "৳১০০"})\n` +
       (customerName ? `👤 *নাম:* ${customerName}\n` : "") +
       (customerPhone ? `📞 *ফোন:* ${customerPhone}\n` : "") +
       (shippingAddress ? `🏠 *ঠিকানা:* ${shippingAddress}\n` : "") +
@@ -432,49 +432,46 @@ export default function QuickOrderModal({ product, isOpen, onClose }: QuickOrder
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <label
-                      className={`p-2 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                        deliveryZone === "Inside Dhaka"
-                          ? "border-forest bg-emerald-50/60 ring-1 ring-forest"
-                          : "border-stone-200 bg-stone-50/50"
-                      }`}
+                      className={`p-2 rounded-xl border flex items-center justify-between cursor-pointer transition-all border-forest bg-emerald-50/60 ring-1 ring-forest`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <input
                           type="radio"
                           name="quickDeliveryZone"
-                          checked={deliveryZone === "Inside Dhaka"}
-                          onChange={() => setDeliveryZone("Inside Dhaka")}
+                          checked={true}
+                          readOnly
                           className="w-3.5 h-3.5 text-forest"
                         />
                         <span className="text-xs font-bold text-stone-900">ঢাকা সিটির ভেতরে</span>
                       </div>
-                      <span className="text-[11px] font-mono font-bold text-stone-600">
-                        {isFreeDelivery ? "৳০" : "৳৭০"}
+                      <span className="text-[11px] font-mono font-bold text-forest">
+                        {isFreeDelivery ? "ফ্রি" : "৳১০০"}
                       </span>
                     </label>
 
-                    <label
-                      className={`p-2 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                        deliveryZone === "Outside Dhaka"
-                          ? "border-forest bg-emerald-50/60 ring-1 ring-forest"
-                          : "border-stone-200 bg-stone-50/50"
-                      }`}
+                    <div
+                      className="p-2 rounded-xl border border-dashed border-stone-300 bg-stone-100/70 flex items-center justify-between cursor-not-allowed opacity-70"
+                      title="ঢাকার বাইরে আপাতত ডেলিভারি সেবা নেই"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <input
                           type="radio"
                           name="quickDeliveryZone"
-                          checked={deliveryZone === "Outside Dhaka"}
-                          onChange={() => setDeliveryZone("Outside Dhaka")}
-                          className="w-3.5 h-3.5 text-forest"
+                          disabled
+                          checked={false}
+                          className="w-3.5 h-3.5 text-stone-400"
                         />
-                        <span className="text-xs font-bold text-stone-900">ঢাকার বাইরে</span>
+                        <div>
+                          <span className="text-xs font-bold text-stone-500 block">ঢাকার বাইরে</span>
+                          <span className="text-[9px] text-amber-700 font-bold">আপাতত বন্ধ</span>
+                        </div>
                       </div>
-                      <span className="text-[11px] font-mono font-bold text-stone-600">
-                        {isFreeDelivery ? "৳০" : "৳১৩০"}
-                      </span>
-                    </label>
+                      <span className="text-[10px] text-stone-400">সেবা নেই</span>
+                    </div>
                   </div>
+                  <p className="text-[10px] text-stone-500 mt-1 flex items-center gap-1">
+                    <span>ℹ️ সর্বোচ্চ সতেজতা নিশ্চিত করতে ডেলিভারি সেবা শুধুমাত্র ঢাকা সিটির ভেতরে চালু রয়েছে।</span>
+                  </p>
                 </div>
               </div>
 
