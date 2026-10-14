@@ -13,6 +13,10 @@ import {
   FileDown,
   Image as ImageIcon,
   CheckCircle,
+  Truck,
+  Edit2,
+  X,
+  Check,
 } from "lucide-react";
 import { formatTaka, getSafeImageUrl } from "@/lib/utils";
 
@@ -29,6 +33,11 @@ export default function OrderInvoicePrintPage({
   const [isDownloadingImage, setIsDownloadingImage] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
 
+  // Delivery Charge Quick Edit State
+  const [showFeeModal, setShowFeeModal] = useState(false);
+  const [feeInput, setFeeInput] = useState<number>(60);
+  const [isSavingFee, setIsSavingFee] = useState(false);
+
   useEffect(() => {
     Promise.all([
       fetch("/api/admin/orders/" + id).then((res) => res.json()),
@@ -37,12 +46,40 @@ export default function OrderInvoicePrintPage({
         .catch(() => ({ settings: {} })),
     ])
       .then(([orderJson, settingsJson]) => {
-        if (orderJson.success) setOrder(orderJson.order);
+        if (orderJson.success && orderJson.order) {
+          setOrder(orderJson.order);
+          setFeeInput(Number(orderJson.order.shippingFee ?? 60));
+        }
         if (settingsJson.success && settingsJson.settings) setSettings(settingsJson.settings);
       })
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Handle Updating Delivery Charge directly on Invoice & Database
+  const handleUpdateShippingFee = async (newFee: number) => {
+    if (!order) return;
+    setIsSavingFee(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${order.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shippingFee: Math.max(0, newFee) }),
+      });
+      const data = await res.json();
+      if (data.success && data.order) {
+        setOrder(data.order);
+        setFeeInput(Number(data.order.shippingFee ?? 0));
+        setShowFeeModal(false);
+        setDownloadSuccess(`ডেলিভারি চার্জ ৳${newFee} এ সফলভাবে আপডেট হয়েছে!`);
+        setTimeout(() => setDownloadSuccess(null), 3000);
+      }
+    } catch (e) {
+      console.error("Failed to update delivery fee:", e);
+    } finally {
+      setIsSavingFee(false);
+    }
+  };
 
   // 1. Direct High-Resolution 1-Page PDF Download (No UI buttons, strictly 1 page)
   const handleDownloadPdf = async () => {
@@ -222,8 +259,8 @@ export default function OrderInvoicePrintPage({
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }
-              /* Hide all top action bars, buttons, and navigation */
-              .no-print, header, nav, button, a.no-print-link {
+              /* Hide all top action bars, buttons, edit modals, and navigation */
+              .no-print, header, nav, button, a.no-print-link, .edit-fee-btn {
                 display: none !important;
                 visibility: hidden !important;
                 height: 0 !important;
@@ -276,6 +313,16 @@ export default function OrderInvoicePrintPage({
           </Link>
 
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            {/* Quick Delivery Fee Edit Button */}
+            <button
+              onClick={() => setShowFeeModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              title="Change Delivery Fee"
+            >
+              <Truck className="w-3.5 h-3.5 text-amber-600" />
+              <span>ডেলিভারি চার্জ এডিট (৳{deliveryCharge})</span>
+            </button>
+
             <Link
               href={`/admin/orders/${order.id}/label`}
               className="no-print-link inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-forest/20 bg-forest-soft text-forest hover:bg-forest hover:text-white text-xs font-bold transition-all"
@@ -331,18 +378,95 @@ export default function OrderInvoicePrintPage({
           </div>
         </div>
 
+        {/* Delivery Fee Quick Edit Popover Modal */}
+        {showFeeModal && (
+          <div className="p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-300 shadow-xl space-y-3 animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-amber-700" />
+                <h4 className="text-xs font-bold text-amber-950 font-display">
+                  ডেলিভারি চার্জ নির্ধারণ বা পরিবর্তন করুন (#{order.orderNumber})
+                </h4>
+              </div>
+              <button
+                onClick={() => setShowFeeModal(false)}
+                className="text-neutral-500 hover:text-neutral-800 p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-neutral-700">কুইক প্রিসেট:</span>
+              {[
+                { label: "ফ্রি (৳০)", val: 0 },
+                { label: "ঢাকা ভেতরে (৳৬০)", val: 60 },
+                { label: "ঢাকা সিটি (৳৭০)", val: 70 },
+                { label: "ঢাকা বাইরে (৳১২০)", val: 120 },
+                { label: "সারা বাংলাদেশ (৳১৩০)", val: 130 },
+              ].map((p) => (
+                <button
+                  key={p.val}
+                  type="button"
+                  onClick={() => setFeeInput(p.val)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    feeInput === p.val
+                      ? "bg-forest text-white shadow-xs"
+                      : "bg-white text-neutral-800 border border-neutral-300 hover:bg-neutral-100"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3 pt-1">
+              <div className="flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-neutral-300">
+                <span className="text-xs font-bold text-neutral-500">৳</span>
+                <input
+                  type="number"
+                  min={0}
+                  value={feeInput}
+                  onChange={(e) => setFeeInput(Math.max(0, Number(e.target.value) || 0))}
+                  className="w-20 bg-transparent text-sm font-bold font-mono text-neutral-900 focus:outline-none"
+                  placeholder="0"
+                />
+              </div>
+
+              <button
+                onClick={() => handleUpdateShippingFee(feeInput)}
+                disabled={isSavingFee}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-forest hover:bg-forest-deep text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isSavingFee ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
+                <span>সংরক্ষণ ও ইনভয়েস আপডেট করুন</span>
+              </button>
+
+              <button
+                onClick={() => setShowFeeModal(false)}
+                className="px-3 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900"
+              >
+                বাতিল
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Mobile-Friendly Helper Tip & Download Success Banner */}
         {downloadSuccess ? (
           <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium animate-fadeIn">
             <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>{downloadSuccess} ফাইলটি আপনার ডিভাইসে সংরক্ষিত হয়েছে।</span>
+            <span>{downloadSuccess}</span>
           </div>
         ) : (
           <div className="flex items-center justify-between text-[11px] text-neutral-500 px-2 py-0.5">
             <span>
-              💡 <strong>টিপস:</strong> ফোনে ১ পেজের নিখুঁত ইনভয়েস পেতে{" "}
-              <strong className="text-forest">Download PDF</strong> বাটনে চাপ দিন — কোনো বাটন বা
-              স্ক্রিনশটের অংশ আসবে না।
+              💡 <strong>টিপস:</strong> অর্ডারে ডেলিভারি চার্জ পরিবর্তন করতে{" "}
+              <strong className="text-amber-800">ডেলিভারি চার্জ এডিট</strong> বাটনে চাপ দিন।
             </span>
           </div>
         )}
@@ -457,7 +581,7 @@ export default function OrderInvoicePrintPage({
           </div>
         </div>
 
-        {/* Line Items Table with Dedicated Subtotal Footer */}
+        {/* Line Items Table with Complete Accounting Breakdown in Footer */}
         <div className="border border-neutral-300 rounded-xl overflow-hidden">
           <table className="w-full text-left text-xs">
             <thead className="bg-neutral-100 uppercase font-mono text-[9px] text-neutral-700 border-b border-neutral-300">
@@ -497,8 +621,10 @@ export default function OrderInvoicePrintPage({
                 );
               })}
             </tbody>
-            {/* Table Footer: Itemizing Total Quantity and Products Subtotal */}
-            <tfoot className="bg-neutral-50 border-t-2 border-neutral-300 text-neutral-900 font-semibold">
+
+            {/* Table Footer: Full Accounting Itemization including Delivery Charge */}
+            <tfoot className="bg-neutral-50 border-t-2 border-neutral-300 text-neutral-900 font-semibold divide-y divide-neutral-200">
+              {/* 1. Products Subtotal Row */}
               <tr>
                 <td
                   colSpan={3}
@@ -509,11 +635,82 @@ export default function OrderInvoicePrintPage({
                 <td className="py-1.5 px-3 text-center font-mono font-bold text-[11px]">
                   {totalItemsCount}
                 </td>
-                <td className="py-1.5 px-3 text-right text-[10px] font-mono text-neutral-600 uppercase">
-                  Products Subtotal:
+                <td className="py-1.5 px-3 text-right text-[10px] font-mono font-bold text-neutral-700 uppercase">
+                  Products Subtotal (পণ্যের মূল্য):
                 </td>
                 <td className="py-1.5 px-3 text-right font-mono font-bold text-neutral-900 text-[11px]">
                   {formatTaka(productsSubtotal)}
+                </td>
+              </tr>
+
+              {/* 2. Delivery Charge Row (PROMINENTLY DISPLAYED IN TABLE) */}
+              <tr className="bg-amber-50/50">
+                <td colSpan={4} className="py-1.5 px-3 text-left text-[10px] text-neutral-600">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-neutral-800">🚚 ডেলিভারি জোন:</span>
+                    <span className="px-1.5 py-0.5 rounded bg-forest-soft text-forest text-[10px] font-bold">
+                      {order.deliveryZone || "Inside Dhaka"}
+                    </span>
+                    <button
+                      onClick={() => setShowFeeModal(true)}
+                      className="edit-fee-btn no-print ml-2 text-[10px] text-amber-800 hover:text-amber-950 underline font-bold cursor-pointer"
+                    >
+                      [✏️ চার্জ পরিবর্তন]
+                    </button>
+                  </div>
+                </td>
+                <td className="py-1.5 px-3 text-right text-[10px] font-mono font-bold text-neutral-800 uppercase">
+                  Delivery Charge (ডেলিভারি চার্জ):
+                </td>
+                <td className="py-1.5 px-3 text-right font-mono font-bold text-[11px]">
+                  {deliveryCharge > 0 ? (
+                    <span className="text-forest font-bold">{formatTaka(deliveryCharge)}</span>
+                  ) : (
+                    <span className="text-emerald-700 font-bold">৳০ (ফ্রি ডেলিভারি)</span>
+                  )}
+                </td>
+              </tr>
+
+              {/* 3. Discount Row (if any) */}
+              {discountAmount > 0 && (
+                <tr className="bg-emerald-50/40 text-emerald-800">
+                  <td colSpan={4} className="py-1 px-3 text-left text-[10px]">
+                    কুপন / ডিসকাউন্ট ({order.promoCodeText || "Coupon"})
+                  </td>
+                  <td className="py-1 px-3 text-right text-[10px] font-mono font-bold uppercase">
+                    Discount (ছাড়):
+                  </td>
+                  <td className="py-1 px-3 text-right font-mono font-bold text-[11px]">
+                    -{formatTaka(discountAmount)}
+                  </td>
+                </tr>
+              )}
+
+              {/* 4. Enmar Coins Discount Row (if any) */}
+              {coinsDiscount > 0 && (
+                <tr className="bg-amber-50/40 text-amber-900">
+                  <td colSpan={4} className="py-1 px-3 text-left text-[10px]">
+                    কয়েন ডিসকাউন্ট ({order.coinsRedeemed || 0} Coins)
+                  </td>
+                  <td className="py-1 px-3 text-right text-[10px] font-mono font-bold uppercase">
+                    Coins Discount:
+                  </td>
+                  <td className="py-1 px-3 text-right font-mono font-bold text-[11px]">
+                    -{formatTaka(coinsDiscount)}
+                  </td>
+                </tr>
+              )}
+
+              {/* 5. Net Payable Grand Total Row */}
+              <tr className="bg-neutral-100 border-t-2 border-neutral-900 text-neutral-900">
+                <td colSpan={4} className="py-2 px-3 text-left text-[11px] font-bold text-forest">
+                  {isCOD ? "Cash on Delivery (ক্যাশ অন ডেলিভারি)" : `Payment: ${order.paymentMethod}`}
+                </td>
+                <td className="py-2 px-3 text-right text-xs font-bold font-display text-forest uppercase">
+                  Net Payable Total (সর্বমোট প্রদেয়):
+                </td>
+                <td className="py-2 px-3 text-right font-mono font-bold text-forest text-sm">
+                  {formatTaka(grandTotal)}
                 </td>
               </tr>
             </tfoot>
@@ -572,12 +769,21 @@ export default function OrderInvoicePrintPage({
 
             {/* 2. Delivery Charge (Separately Calculated) */}
             <div className="flex justify-between text-neutral-700 text-[11px]">
-              <span className="font-medium">
-                Delivery Charge ({order.deliveryZone || "Standard"}):
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="font-medium">
+                  Delivery Charge ({order.deliveryZone || "Standard"}):
+                </span>
+                <button
+                  onClick={() => setShowFeeModal(true)}
+                  className="edit-fee-btn no-print text-[9px] text-amber-800 hover:text-amber-950 font-bold underline cursor-pointer"
+                  title="Edit delivery charge"
+                >
+                  [এডিট]
+                </button>
+              </div>
               <span className="font-mono text-neutral-900 font-bold">
                 {deliveryCharge === 0 ? (
-                  <span className="text-emerald-700 font-bold">৳0 (FREE)</span>
+                  <span className="text-emerald-700 font-bold">৳০ (ফ্রি ডেলিভারি)</span>
                 ) : (
                   formatTaka(deliveryCharge)
                 )}

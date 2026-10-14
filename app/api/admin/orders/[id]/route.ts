@@ -100,6 +100,16 @@ export async function PUT(
       dataToUpdate.refundNeeded = refundStatus === "REFUND_NEEDED";
     }
 
+    if (body.shippingFee !== undefined && !isNaN(Number(body.shippingFee))) {
+      const newShippingFee = Math.max(0, Number(body.shippingFee));
+      dataToUpdate.shippingFee = newShippingFee;
+      // Automatically recalculate totalAmount
+      const subtotal = Number(existing.subtotal || 0);
+      const discountAmount = Number(existing.discountAmount || 0);
+      const coinsDiscount = Number(existing.coinsDiscount || 0);
+      dataToUpdate.totalAmount = Math.max(0, subtotal + newShippingFee - discountAmount - coinsDiscount);
+    }
+
     const isStatusChanged = orderStatus && orderStatus !== existing.orderStatus;
     const isCancelling = isStatusChanged && orderStatus === "CANCELLED";
 

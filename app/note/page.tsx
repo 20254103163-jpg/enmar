@@ -1050,7 +1050,7 @@ export default function NoteOrderHubPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* Quick Preset Buttons */}
                     <div className="flex items-center gap-1">
-                      {[0, 50, 60, 70, 80, 100, 120, 150].map((fee) => (
+                      {[60, 70, 80, 100, 120, 150, 0].map((fee) => (
                         <button
                           key={fee}
                           type="button"
@@ -1246,7 +1246,7 @@ export default function NoteOrderHubPage() {
 
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex items-center gap-1">
-                      {[0, 50, 60, 70, 80, 100, 120, 150].map((fee) => (
+                      {[60, 70, 80, 100, 120, 150, 0].map((fee) => (
                         <button
                           key={fee}
                           type="button"
