@@ -533,6 +533,48 @@ function OrderTrackingDetailContent({
                 </div>
               ))}
             </div>
+
+            {/* Separate Financial Calculation Breakdown */}
+            <div className="pt-4 border-t border-line space-y-2 text-xs">
+              <div className="flex justify-between text-ink-soft">
+                <span>{locale === "bn" ? "পণ্যের মোট মূল্য (Subtotal)" : "Products Subtotal"}:</span>
+                <span className="font-mono font-semibold text-ink">
+                  {formatTaka(order.subtotal)}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-ink-soft">
+                <span>
+                  {locale === "bn" ? "ডেলিভারি চার্জ" : "Delivery Charge"} ({order.deliveryZone || (locale === "bn" ? "স্ট্যান্ডার্ড" : "Standard")}):
+                </span>
+                <span className="font-mono font-semibold text-ink">
+                  {Number(order.shippingFee) === 0 ? (
+                    <span className="text-emerald-700 font-bold">{locale === "bn" ? "ফ্রি ডেলিভারি" : "FREE"}</span>
+                  ) : (
+                    formatTaka(order.shippingFee)
+                  )}
+                </span>
+              </div>
+
+              {Number(order.discountAmount) > 0 && (
+                <div className="flex justify-between text-emerald-700 font-medium">
+                  <span>{locale === "bn" ? "ডিসকাউন্ট ছাড়" : "Discount"} ({order.promoCodeText || "Coupon"}):</span>
+                  <span className="font-mono font-semibold">-{formatTaka(order.discountAmount)}</span>
+                </div>
+              )}
+
+              {Number(order.coinsDiscount) > 0 && (
+                <div className="flex justify-between text-amber-700 font-medium">
+                  <span>{locale === "bn" ? "কয়েন ছাড়" : "Coins Discount"} ({order.coinsRedeemed || 0} Coins):</span>
+                  <span className="font-mono font-semibold">-{formatTaka(order.coinsDiscount)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-sm font-bold text-ink pt-2.5 border-t border-line">
+                <span className="text-forest font-display">{locale === "bn" ? "সর্বমোট প্রদেয় বিল" : "Net Total Amount"}:</span>
+                <span className="font-mono text-forest text-base">{formatTaka(order.totalAmount)}</span>
+              </div>
+            </div>
           </div>
         </div>
 

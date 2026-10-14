@@ -60,6 +60,31 @@ export default function OrderInvoicePrintPage({
   const brandAddress = settings.contactAddress || "Dhaka, Bangladesh";
   const brandLogo = settings.siteLogo || "";
 
+  // Accurate financial calculations separating product prices and delivery charge
+  const items = Array.isArray(order.items) ? order.items : [];
+  const calculatedProductsSubtotal = items.reduce(
+    (sum: number, it: any) =>
+      sum + (Number(it.totalPrice) || Number(it.unitPrice || 0) * Number(it.quantity || 1)),
+    0
+  );
+  const productsSubtotal = calculatedProductsSubtotal > 0 ? calculatedProductsSubtotal : Number(order.subtotal || 0);
+  const totalItemsCount = items.reduce((sum: number, it: any) => sum + Number(it.quantity || 1), 0);
+
+  const deliveryCharge = Number(order.shippingFee ?? 0);
+  const discountAmount = Number(order.discountAmount ?? 0);
+  const coinsDiscount = Number(order.coinsDiscount ?? 0);
+  const totalDiscounts = discountAmount + coinsDiscount;
+
+  const calculatedGrandTotal = Math.max(0, productsSubtotal - totalDiscounts + deliveryCharge);
+  const grandTotal = Number(
+    order.totalAmount !== undefined && order.totalAmount !== null
+      ? order.totalAmount
+      : calculatedGrandTotal
+  );
+
+  const isCOD = order.paymentMethod === "COD";
+  const isPaid = order.paymentStatus === "PAID" || (!isCOD && order.paymentStatus !== "FAILED");
+
   return (
     <div className="min-h-screen bg-neutral-100 p-4 sm:p-6 print:p-0 print:m-0 print:bg-white text-neutral-900 font-sans">
       {/* Strict 1-Page Print Styles */}
@@ -190,7 +215,7 @@ export default function OrderInvoicePrintPage({
               {order.shippingAddress}
             </p>
             <span className="inline-block text-[10px] font-semibold text-forest bg-forest-soft px-1.5 py-0.5 rounded">
-              {order.deliveryZone}
+              {order.deliveryZone || "Inside Dhaka"}
             </span>
             {order.customerNotes && (
               <p className="text-[10px] text-neutral-500 italic pt-0.5">
@@ -223,7 +248,7 @@ export default function OrderInvoicePrintPage({
           </div>
         </div>
 
-        {/* Line Items Table */}
+        {/* Line Items Table with Dedicated Subtotal Footer */}
         <div className="border border-neutral-300 rounded-xl overflow-hidden">
           <table className="w-full text-left text-xs">
             <thead className="bg-neutral-100 uppercase font-mono text-[9px] text-neutral-700 border-b border-neutral-300">
@@ -237,49 +262,136 @@ export default function OrderInvoicePrintPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200">
-              {order.items?.map((item: any, idx: number) => (
-                <tr key={item.id}>
-                  <td className="py-1.5 px-3 font-mono text-neutral-500 text-[11px]">{idx + 1}</td>
-                  <td className="py-1.5 px-3 font-bold text-neutral-900 text-[11px]">{item.productName}</td>
-                  <td className="py-1.5 px-3 text-center text-neutral-600 text-[10px]">{item.unit || "piece"}</td>
-                  <td className="py-1.5 px-3 text-center font-mono font-bold text-neutral-900 text-[11px]">{item.quantity}</td>
-                  <td className="py-1.5 px-3 text-right font-mono text-[11px]">{formatTaka(item.unitPrice)}</td>
-                  <td className="py-1.5 px-3 text-right font-mono font-bold text-neutral-900 text-[11px]">
-                    {formatTaka(item.totalPrice)}
-                  </td>
-                </tr>
-              ))}
+              {items.map((item: any, idx: number) => {
+                const itemTotal =
+                  Number(item.totalPrice) ||
+                  Number(item.unitPrice || 0) * Number(item.quantity || 1);
+                return (
+                  <tr key={item.id || idx}>
+                    <td className="py-1.5 px-3 font-mono text-neutral-500 text-[11px]">{idx + 1}</td>
+                    <td className="py-1.5 px-3 font-bold text-neutral-900 text-[11px]">
+                      {item.productName}
+                    </td>
+                    <td className="py-1.5 px-3 text-center text-neutral-600 text-[10px]">
+                      {item.unit || "piece"}
+                    </td>
+                    <td className="py-1.5 px-3 text-center font-mono font-bold text-neutral-900 text-[11px]">
+                      {item.quantity}
+                    </td>
+                    <td className="py-1.5 px-3 text-right font-mono text-[11px]">
+                      {formatTaka(item.unitPrice)}
+                    </td>
+                    <td className="py-1.5 px-3 text-right font-mono font-bold text-neutral-900 text-[11px]">
+                      {formatTaka(itemTotal)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
+            {/* Table Footer: Clearly itemizing Total Quantity and Products Subtotal */}
+            <tfoot className="bg-neutral-50 border-t-2 border-neutral-300 text-neutral-900 font-semibold">
+              <tr>
+                <td colSpan={3} className="py-2 px-3 text-right text-[10px] font-mono text-neutral-600 uppercase">
+                  Total Items:
+                </td>
+                <td className="py-2 px-3 text-center font-mono font-bold text-[11px]">
+                  {totalItemsCount}
+                </td>
+                <td className="py-2 px-3 text-right text-[10px] font-mono text-neutral-600 uppercase">
+                  Products Subtotal:
+                </td>
+                <td className="py-2 px-3 text-right font-mono font-bold text-neutral-900 text-[11px]">
+                  {formatTaka(productsSubtotal)}
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
 
-        {/* Calculation Summary Breakdown */}
-        <div className="flex justify-end pt-1">
-          <div className="w-60 space-y-1 text-xs">
-            <div className="flex justify-between text-neutral-600 text-[11px]">
-              <span>Subtotal:</span>
-              <span className="font-mono text-neutral-900 font-semibold">
-                {formatTaka(order.subtotal)}
+        {/* Calculation Summary Breakdown: Separate Product Price & Delivery Charge */}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pt-1">
+          {/* Payment & Collection Summary */}
+          <div className="w-full sm:max-w-xs border border-neutral-200 rounded-xl p-3 bg-neutral-50/70 text-[11px] space-y-1.5">
+            <span className="font-bold uppercase tracking-wider text-neutral-600 text-[9px] block">
+              Payment &amp; Collection Summary
+            </span>
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Method:</span>
+              <span className="font-mono font-bold text-neutral-900">{order.paymentMethod}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Status:</span>
+              <span
+                className={`font-mono font-bold ${
+                  isPaid ? "text-emerald-700" : "text-amber-700"
+                }`}
+              >
+                {order.paymentStatus}
+              </span>
+            </div>
+            <div className="pt-1.5 border-t border-neutral-200 flex justify-between items-center">
+              <span className="font-semibold text-neutral-700">
+                {isCOD ? "Cash to Collect (COD):" : "Amount Paid:"}
+              </span>
+              <span className="font-mono font-bold text-sm text-forest">
+                {formatTaka(grandTotal)}
+              </span>
+            </div>
+            {isPaid ? (
+              <p className="text-[10px] text-emerald-700 font-medium pt-0.5">
+                ✓ Order has been paid online. Do NOT collect cash from customer.
+              </p>
+            ) : isCOD ? (
+              <p className="text-[10px] text-amber-800 font-medium pt-0.5">
+                ⚠ Collect exact cash amount from customer at delivery.
+              </p>
+            ) : null}
+          </div>
+
+          {/* Right Side: Exact Financial Calculation Breakdown */}
+          <div className="w-full sm:w-72 bg-neutral-50/50 border border-neutral-200 rounded-xl p-3 space-y-1.5 text-xs">
+            {/* 1. Products Price Subtotal */}
+            <div className="flex justify-between text-neutral-700 text-[11px]">
+              <span className="font-medium">Products Price (পণ্যের মূল্য):</span>
+              <span className="font-mono text-neutral-900 font-bold">
+                {formatTaka(productsSubtotal)}
               </span>
             </div>
 
-            {order.discountAmount > 0 && (
+            {/* 2. Delivery Charge (Separately Calculated) */}
+            <div className="flex justify-between text-neutral-700 text-[11px]">
+              <span className="font-medium">
+                Delivery Charge ({order.deliveryZone || "Standard"}):
+              </span>
+              <span className="font-mono text-neutral-900 font-bold">
+                {deliveryCharge === 0 ? (
+                  <span className="text-emerald-700 font-bold">৳0 (FREE)</span>
+                ) : (
+                  formatTaka(deliveryCharge)
+                )}
+              </span>
+            </div>
+
+            {/* 3. Promo / Coupon Discount (if any) */}
+            {discountAmount > 0 && (
               <div className="flex justify-between text-emerald-700 text-[11px]">
                 <span>Discount ({order.promoCodeText || "Coupon"}):</span>
-                <span className="font-mono">-{formatTaka(order.discountAmount)}</span>
+                <span className="font-mono font-semibold">-{formatTaka(discountAmount)}</span>
               </div>
             )}
 
-            <div className="flex justify-between text-neutral-600 text-[11px]">
-              <span>Delivery Fee ({order.deliveryZone}):</span>
-              <span className="font-mono text-neutral-900">
-                {order.shippingFee === 0 ? "FREE" : formatTaka(order.shippingFee)}
-              </span>
-            </div>
+            {/* 4. Enmar Coins Discount (if any) */}
+            {coinsDiscount > 0 && (
+              <div className="flex justify-between text-amber-800 text-[11px]">
+                <span>Coins Discount ({order.coinsRedeemed || 0} Coins):</span>
+                <span className="font-mono font-semibold">-{formatTaka(coinsDiscount)}</span>
+              </div>
+            )}
 
-            <div className="flex justify-between text-sm font-bold text-neutral-900 pt-1.5 border-t-2 border-neutral-900">
-              <span>Total Amount:</span>
-              <span className="font-mono text-forest">{formatTaka(order.totalAmount)}</span>
+            {/* 5. Net Payable Total */}
+            <div className="flex justify-between text-sm font-bold text-neutral-900 pt-2 border-t-2 border-neutral-900">
+              <span className="text-forest font-display">Net Payable Total:</span>
+              <span className="font-mono text-forest text-base">{formatTaka(grandTotal)}</span>
             </div>
           </div>
         </div>

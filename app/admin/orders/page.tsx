@@ -21,6 +21,7 @@ import {
   Square,
   AlertTriangle,
   Loader2,
+  Printer,
 } from "lucide-react";
 import { formatTaka } from "@/lib/utils";
 import StatusBadge from "@/components/admin/StatusBadge";
@@ -557,6 +558,15 @@ export default function AdminOrdersPage() {
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
+                        </Link>
+
+                        <Link
+                          href={`/admin/orders/${order.id}/invoice`}
+                          target="_blank"
+                          className="p-1.5 inline-block rounded-lg bg-bg hover:bg-forest/10 hover:text-forest text-ink-soft transition-colors"
+                          title="Print Invoice / Packing Slip"
+                        >
+                          <Printer className="w-4 h-4" />
                         </Link>
 
                         <button

@@ -748,6 +748,18 @@ export default function NoteOrderHubPage() {
                 <span>🌐 লাইভ ট্র্যাকিং পেজ</span>
               </a>
 
+              {/* Print Official Invoice */}
+              {createdOrderResult.order?.id && (
+                <Link
+                  href={`/admin/orders/${createdOrderResult.order.id}/invoice`}
+                  target="_blank"
+                  className="py-3 px-4 rounded-xl bg-forest hover:bg-forest-deep text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md"
+                >
+                  <Receipt className="w-4 h-4" />
+                  <span>🖨️ ইনভয়েস প্রিন্ট</span>
+                </Link>
+              )}
+
               {/* Close / Dismiss */}
               <button
                 onClick={() => setCreatedOrderResult(null)}
@@ -1332,7 +1344,7 @@ export default function NoteOrderHubPage() {
                   const waNumber = cleanPhone.startsWith("0") ? "88" + cleanPhone : cleanPhone;
                   const origin = typeof window !== "undefined" ? window.location.origin : "https://enmar.com.bd";
                   const trackingUrl = `${origin}/track/${ord.trackingId}`;
-                  const waMsg = `আসসালামু আলাইকুম ${ord.customerName}! 🌿\nENMAR-এ আপনার অর্ডার (#${ord.orderNumber}) প্রস্তুত করা হচ্ছে।\nডেলিভারি ঠিকানা: ${ord.shippingAddress}\nসর্বমোট বিল: ৳${ord.totalAmount}\n\nআপনার পার্সেলটি লাইভ ট্র্যাক করতে ভিজিট করুন: ${trackingUrl}`;
+                  const waMsg = `আসসালামু আলাইকুম ${ord.customerName}! 🌿\nENMAR-এ আপনার অর্ডার (#${ord.orderNumber}) প্রস্তুত করা হচ্ছে।\nডেলিভারি ঠিকানা: ${ord.shippingAddress}\n\n💵 পণ্যের মূল্য: ৳${ord.subtotal}\n🚚 ডেলিভারি চার্জ: ৳${ord.shippingFee}\n💰 সর্বমোট বিল: ৳${ord.totalAmount}\n\nআপনার পার্সেলটি লাইভ ট্র্যাক করতে ভিজিট করুন: ${trackingUrl}`;
                   const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMsg)}`;
 
                   return (
@@ -1361,6 +1373,17 @@ export default function NoteOrderHubPage() {
                           <span className="text-[11px] text-stone-400 block">মোট বিল</span>
                           <strong className="text-sm font-mono text-amber-400">{formatTaka(ord.totalAmount)}</strong>
                         </div>
+
+                        {/* Invoice Print Link */}
+                        <Link
+                          href={`/admin/orders/${ord.id}/invoice`}
+                          target="_blank"
+                          className="py-2 px-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-semibold text-xs flex items-center gap-1.5 transition-colors"
+                          title="ইনভয়েস প্রিন্ট"
+                        >
+                          <Receipt className="w-3.5 h-3.5 text-amber-400" />
+                          <span>ইনভয়েস</span>
+                        </Link>
 
                         {/* WhatsApp Receipt Button */}
                         <a

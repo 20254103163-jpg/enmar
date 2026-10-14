@@ -177,7 +177,8 @@ export async function POST(req: NextRequest) {
       .map((it) => `• ${it.productName} (${it.quantity} ${it.unit}) - ৳${it.totalPrice}`)
       .join("\n");
 
-    const whatsappMessage = `আসসালামু আলাইকুম ${customerName}! 🌿\nENMAR Organic Food-এ আপনার অর্ডারটি গ্রহণ করা হয়েছে।\n\n📦 অর্ডার নম্বর: #${newOrder.orderNumber}\n📍 ঠিকানা: ${shippingAddress}\n\n🛒 পণ্যের বিবরণ:\n${itemsSummary}\n\n🚚 ডেলিভারি চার্জ: ৳${shippingFee}\n💰 সর্বমোট বিল: ৳${totalAmount} (${paymentMethod === "COD" ? "ক্যাশ অন ডেলিভারি" : "পরিশোধিত"})\n\n🔍 পার্সেল লাইভ ট্র্যাক করতে ভিজিট করুন:\n${trackingUrl}\n\nধন্যবাদ আমাদের সাথে থাকার জন্য! 💚`;
+    const discountLine = discountAmount > 0 ? `🏷️ ডিসকাউন্ট ছাড়: -৳${discountAmount}\n` : "";
+    const whatsappMessage = `আসসালামু আলাইকুম ${customerName}! 🌿\nENMAR Organic Food-এ আপনার অর্ডারটি গ্রহণ করা হয়েছে।\n\n📦 অর্ডার নম্বর: #${newOrder.orderNumber}\n📍 ঠিকানা: ${shippingAddress}\n\n🛒 পণ্যের বিবরণ:\n${itemsSummary}\n\n💵 পণ্যের মোট মূল্য: ৳${calculatedSubtotal}\n🚚 ডেলিভারি চার্জ: ৳${shippingFee} (${deliveryZone})\n${discountLine}💰 সর্বমোট বিল: ৳${totalAmount} (${paymentMethod === "COD" ? "ক্যাশ অন ডেলিভারি" : "পরিশোধিত"})\n\n🔍 পার্সেল লাইভ ট্র্যাক করতে ভিজিট করুন:\n${trackingUrl}\n\nধন্যবাদ আমাদের সাথে থাকার জন্য! 💚`;
 
     const cleanWaPhone = cleanPhone.startsWith("0") ? "88" + cleanPhone : cleanPhone;
     const whatsappUrl = `https://wa.me/${cleanWaPhone}?text=${encodeURIComponent(whatsappMessage)}`;

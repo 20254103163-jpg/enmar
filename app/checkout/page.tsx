@@ -174,10 +174,14 @@ export default function CheckoutPage() {
   const discountAmount =
     appliedPromo && !isPromoFreeShipping ? Number(appliedPromo.discountAmount || 0) : 0;
 
+  // Zone adjustment (Outside Dhaka standard courier extra fee when not free shipping)
+  const isOutsideDhaka = formData.deliveryZone === "Outside Dhaka";
+  const zoneAdjustment = isOutsideDhaka && !isPromoFreeShipping && deliveryFee > 0 ? 50 : 0;
+
   // Selected Delivery Slot
   const selectedSlot = deliverySlots.find((s) => s.id === selectedSlotId) || deliverySlots[0];
   const slotExtraFee = selectedSlot?.extraFee ? Number(selectedSlot.extraFee) : 0;
-  const effectiveDeliveryFee = deliveryFee + slotExtraFee;
+  const effectiveDeliveryFee = deliveryFee + slotExtraFee + zoneAdjustment;
 
   // Enmar Coins calculation
   const availableCoins = loyaltyWallet?.coinsBalance || 0;
@@ -547,13 +551,13 @@ export default function CheckoutPage() {
                           {locale === "bn" ? "ঢাকার বাইরে" : "Outside Dhaka"}
                         </span>
                         <span className="text-[11px] text-stone-500 font-mono block mt-0.5">
-                          {deliveryFee === 0 ? "ফ্রি ডেলিভারি" : `চার্জ: ${formatTaka(deliveryFee)}`}
+                          {deliveryFee === 0 ? "ফ্রি ডেলিভারি" : `চার্জ: ${formatTaka(deliveryFee + 50)}`}
                         </span>
                       </div>
                     </div>
                     <div className="text-right flex items-center gap-1.5">
                       <span className="font-mono font-bold text-xs text-forest">
-                        {deliveryFee === 0 ? "ফ্রি" : formatTaka(deliveryFee)}
+                        {deliveryFee === 0 ? "ফ্রি" : formatTaka(deliveryFee + 50)}
                       </span>
                       <Truck className="w-4 h-4 text-forest" />
                     </div>

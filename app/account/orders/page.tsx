@@ -148,6 +148,32 @@ export default function CustomerOrdersPage() {
                         ))}
                       </div>
 
+                      {/* Financial breakdown */}
+                      <div className="pt-2 border-t border-line/40 text-[11px] space-y-1">
+                        <div className="flex items-center justify-between text-ink-soft">
+                          <span>{lang === "bn" ? "পণ্যের মোট মূল্য:" : "Products Subtotal:"}</span>
+                          <span className="font-mono">{formatTaka(o.subtotal)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-ink-soft">
+                          <span>{lang === "bn" ? "ডেলিভারি চার্জ:" : "Delivery Charge:"}</span>
+                          <span className="font-mono">
+                            {Number(o.shippingFee) === 0 ? (lang === "bn" ? "ফ্রি" : "FREE") : formatTaka(o.shippingFee)}
+                          </span>
+                        </div>
+                        {Number(o.discountAmount) > 0 && (
+                          <div className="flex items-center justify-between text-emerald-700 font-medium">
+                            <span>{lang === "bn" ? "ছাড়:" : "Discount:"}</span>
+                            <span className="font-mono">-{formatTaka(o.discountAmount)}</span>
+                          </div>
+                        )}
+                        {Number(o.coinsDiscount) > 0 && (
+                          <div className="flex items-center justify-between text-amber-700 font-medium">
+                            <span>{lang === "bn" ? "কয়েন ছাড়:" : "Coins Discount:"}</span>
+                            <span className="font-mono">-{formatTaka(o.coinsDiscount)}</span>
+                          </div>
+                        )}
+                      </div>
+
                       {/* Action buttons */}
                       <div className="flex items-center justify-between pt-2 border-t border-line/40">
                         <span className="text-[11px] font-mono text-ink-soft">

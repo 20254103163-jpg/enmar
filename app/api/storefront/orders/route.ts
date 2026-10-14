@@ -170,7 +170,15 @@ export async function POST(req: NextRequest) {
       freeShippingThreshold,
     });
 
-    const shippingFee = deliveryCalc.finalDeliveryFee;
+    // Distinct delivery charge calculation:
+    // If free shipping applies via promo or threshold, fee is strictly 0.
+    // Otherwise, respect client-calculated fee if provided (which includes delivery zone / express slot fees), or fallback to deliveryCalc.
+    let shippingFee = deliveryCalc.finalDeliveryFee;
+    if (hasFreeShippingPromo || deliveryCalc.isFreeShipping) {
+      shippingFee = 0;
+    } else if (body.shippingFee !== undefined && !isNaN(Number(body.shippingFee)) && Number(body.shippingFee) >= 0) {
+      shippingFee = Number(body.shippingFee);
+    }
 
     const numCoinsRedeemed = Math.max(0, parseInt(String(coinsRedeemed), 10) || 0);
     const numCoinsDiscount = Math.max(0, parseFloat(String(coinsDiscount)) || 0);

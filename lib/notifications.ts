@@ -259,9 +259,33 @@ export async function notifyOrderPlaced(order: any) {
       
       <div style="background: #fdfbf7; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #f3eedf;">
         <p style="margin: 4px 0; font-size: 13px;"><strong>Tracking ID:</strong> ${order.trackingId}</p>
-        <p style="margin: 4px 0; font-size: 13px;"><strong>Total Amount:</strong> ৳${order.totalAmount}</p>
         <p style="margin: 4px 0; font-size: 13px;"><strong>Payment Method:</strong> ${order.paymentMethod}</p>
-        <p style="margin: 4px 0; font-size: 13px;"><strong>Delivery Address:</strong> ${order.shippingAddress} (${order.deliveryZone})</p>
+        <p style="margin: 4px 0; font-size: 13px;"><strong>Delivery Address:</strong> ${order.shippingAddress} (${order.deliveryZone || "Standard"})</p>
+        <hr style="border: none; border-top: 1px dashed #e5e7eb; margin: 12px 0;" />
+        <div style="font-size: 13px; line-height: 1.8;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span style="color: #4b5563;">Products Subtotal (পণ্যের মূল্য):</span>
+            <span style="font-weight: 600; font-family: monospace;">৳${order.subtotal}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span style="color: #4b5563;">Delivery Charge (ডেলিভারি চার্জ):</span>
+            <span style="font-weight: 600; font-family: monospace;">${Number(order.shippingFee) === 0 ? "FREE (৳0)" : `৳${order.shippingFee}`}</span>
+          </div>
+          ${Number(order.discountAmount) > 0 ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #15803d;">
+            <span>Discount (${order.promoCodeText || "Coupon"}):</span>
+            <span style="font-family: monospace;">-৳${order.discountAmount}</span>
+          </div>` : ""}
+          ${Number(order.coinsDiscount) > 0 ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #b45309;">
+            <span>Coins Discount:</span>
+            <span style="font-family: monospace;">-৳${order.coinsDiscount}</span>
+          </div>` : ""}
+          <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; color: #14421a; border-top: 2px solid #14421a; padding-top: 8px; margin-top: 8px;">
+            <span>Total Payable Amount (সর্বমোট বিল):</span>
+            <span style="font-family: monospace;">৳${order.totalAmount}</span>
+          </div>
+        </div>
       </div>
 
       <div style="text-align: center; margin: 24px 0;">

@@ -337,8 +337,8 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
             {/* Financial Summary */}
             <div className="pt-4 border-t border-line space-y-2 text-sm">
               <div className="flex items-center justify-between text-ink-soft">
-                <span>Subtotal</span>
-                <span className="font-mono">{formatTaka(order.subtotal)}</span>
+                <span>Products Price (Subtotal)</span>
+                <span className="font-mono font-semibold text-ink">{formatTaka(order.subtotal)}</span>
               </div>
 
               {Number(order.discountAmount) > 0 && (
@@ -348,9 +348,18 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 </div>
               )}
 
+              {Number(order.coinsDiscount) > 0 && (
+                <div className="flex items-center justify-between text-amber-700 font-medium">
+                  <span>Coins Discount ({order.coinsRedeemed || 0} Coins)</span>
+                  <span className="font-mono">-{formatTaka(order.coinsDiscount)}</span>
+                </div>
+              )}
+
               <div className="flex items-center justify-between text-ink-soft">
-                <span>Shipping Delivery ({order.deliveryZone || "Standard"})</span>
-                <span className="font-mono">{formatTaka(order.shippingFee)}</span>
+                <span>Delivery Charge ({order.deliveryZone || "Standard"})</span>
+                <span className="font-mono font-semibold text-ink">
+                  {Number(order.shippingFee) === 0 ? "FREE (৳0)" : formatTaka(order.shippingFee)}
+                </span>
               </div>
 
               <div className="flex items-center justify-between text-base font-bold text-ink pt-2 border-t border-line">
