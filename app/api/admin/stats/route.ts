@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
       lowStockProducts,
       recentOrders,
       pendingOrders,
-      productsWithCosts,
+      allProducts,
+      productIngredients,
+      productionBatches,
       allOrders,
     ] = await Promise.all([
       prisma.product.count(),
@@ -37,20 +39,21 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           price: true,
-          ingredients: {
-            select: {
-              quantityNeeded: true,
-              material: {
-                select: { unitCost: true },
-              },
-            },
-          },
-          productionBatches: {
-            take: 1,
-            orderBy: { productionDate: "desc" },
+        },
+      }),
+      prisma.productIngredient.findMany({
+        include: {
+          material: {
             select: { unitCost: true },
           },
         },
+      }),
+      prisma.productionBatch.findMany({
+        select: {
+          productId: true,
+          unitCost: true,
+        },
+        orderBy: { productionDate: "desc" },
       }),
       prisma.order.findMany({
         include: {
@@ -62,19 +65,32 @@ export async function GET(request: NextRequest) {
 
     // 2. Build product cost map
     const productCostMap = new Map<number, number>();
-    productsWithCosts.forEach((p) => {
+
+    // Map latest production batch unit cost per product
+    const batchCostMap = new Map<number, number>();
+    productionBatches.forEach((batch: { productId: number; unitCost: any }) => {
+      if (!batchCostMap.has(batch.productId) && batch.unitCost && Number(batch.unitCost) > 0) {
+        batchCostMap.set(batch.productId, Number(batch.unitCost));
+      }
+    });
+
+    // Map recipe ingredients cost per product
+    const recipeCostMap = new Map<number, number>();
+    productIngredients.forEach(
+      (ing: { productId: number; quantityNeeded: any; material?: { unitCost: any } | null }) => {
+        const lineCost = Number(ing.quantityNeeded || 0) * Number(ing.material?.unitCost || 0);
+        const current = recipeCostMap.get(ing.productId) || 0;
+        recipeCostMap.set(ing.productId, current + lineCost);
+      }
+    );
+
+    // Assign final cost to each product
+    allProducts.forEach((p: { id: number; price: any }) => {
       let unitCost = 0;
-      if (p.ingredients && p.ingredients.length > 0) {
-        unitCost = p.ingredients.reduce(
-          (sum, ing) => sum + Number(ing.quantityNeeded || 0) * Number(ing.material?.unitCost || 0),
-          0
-        );
-      } else if (
-        p.productionBatches &&
-        p.productionBatches.length > 0 &&
-        Number(p.productionBatches[0].unitCost || 0) > 0
-      ) {
-        unitCost = Number(p.productionBatches[0].unitCost);
+      if (recipeCostMap.has(p.id) && (recipeCostMap.get(p.id) || 0) > 0) {
+        unitCost = recipeCostMap.get(p.id)!;
+      } else if (batchCostMap.has(p.id)) {
+        unitCost = batchCostMap.get(p.id)!;
       } else {
         // Fallback estimated production/procurement cost (55% COGS = 45% margin)
         unitCost = Number(p.price || 0) * 0.55;
