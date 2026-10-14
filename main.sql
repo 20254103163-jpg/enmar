@@ -815,6 +815,50 @@ CREATE TABLE IF NOT EXISTS `product_ingredients` (
   CONSTRAINT `product_ingredients_materialId_fkey` FOREIGN KEY (`materialId`) REFERENCES `raw_materials` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+-- Table structure for table `production_batches`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `production_batches` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `batchNumber` VARCHAR(191) NOT NULL,
+  `productId` INT NOT NULL,
+  `quantityProduced` DECIMAL(10, 3) NOT NULL,
+  `unit` VARCHAR(191) NOT NULL DEFAULT 'piece',
+  `productionDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `unitCost` DECIMAL(10, 2) NULL DEFAULT 0.00,
+  `totalCost` DECIMAL(12, 2) NULL DEFAULT 0.00,
+  `operatorName` VARCHAR(191) NULL,
+  `notes` TEXT NULL,
+  `deductedStock` BOOLEAN NOT NULL DEFAULT true,
+  `addedToStock` BOOLEAN NOT NULL DEFAULT true,
+  `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `production_batches_batchNumber_key` (`batchNumber`),
+  INDEX `production_batches_productId_idx` (`productId`),
+  INDEX `production_batches_productionDate_idx` (`productionDate`),
+  CONSTRAINT `production_batches_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for table `production_batch_items`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `production_batch_items` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `batchId` INT NOT NULL,
+  `materialId` INT NOT NULL,
+  `quantityUsed` DECIMAL(10, 3) NOT NULL,
+  `unit` VARCHAR(191) NOT NULL DEFAULT 'kg',
+  `unitCost` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  `totalCost` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+  `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  INDEX `production_batch_items_batchId_idx` (`batchId`),
+  INDEX `production_batch_items_materialId_idx` (`materialId`),
+  CONSTRAINT `production_batch_items_batchId_fkey` FOREIGN KEY (`batchId`) REFERENCES `production_batches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `production_batch_items_materialId_fkey` FOREIGN KEY (`materialId`) REFERENCES `raw_materials` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 

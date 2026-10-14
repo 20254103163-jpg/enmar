@@ -197,6 +197,7 @@ model Product {
   reviews           Review[]
   wishlists         WishlistItem[]
   ingredients       ProductIngredient[]
+  productionBatches ProductionBatch[]
 
   @@index([slug])
   @@index([categoryId])
@@ -822,6 +823,7 @@ model RawMaterial {
 
   purchases          MaterialPurchase[]
   productIngredients ProductIngredient[]
+  batchItems         ProductionBatchItem[]
 
   @@index([isActive])
   @@index([category])
@@ -866,6 +868,48 @@ model ProductIngredient {
   @@index([productId])
   @@index([materialId])
   @@map("product_ingredients")
+}
+
+model ProductionBatch {
+  id               Int                   @id @default(autoincrement())
+  batchNumber      String                @unique // যেমন: PRD-20261014-001
+  productId        Int                   // কোন প্রোডাক্ট তৈরি হলো
+  quantityProduced Decimal               @db.Decimal(10, 3) // কত পিস বা পরিমাণ
+  unit             String                @default("piece") // piece, kg, bottle, jar
+  productionDate   DateTime              @default(now()) // কবে বানানো হলো
+  unitCost         Decimal?              @default(0) @db.Decimal(10, 2) // প্রতি পিসে কাঁচামাল খরচ (৳)
+  totalCost        Decimal?              @default(0) @db.Decimal(12, 2) // ব্যাচটির মোট কাঁচামাল খরচ (৳)
+  operatorName     String?               // কারিগর বা দায়িত্বপ্রাপ্ত ব্যক্তির নাম
+  notes            String?               @db.Text // বিশেষ বিবরণ / লট মন্তব্য
+  deductedStock    Boolean               @default(true) // কাঁচামাল স্টক বিয়োগ করা হয়েছে কিনা
+  addedToStock     Boolean               @default(true) // ফিনিশড প্রোডাক্ট স্টকে যোগ করা হয়েছে কিনা
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  product          Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  items            ProductionBatchItem[]
+
+  @@index([productId])
+  @@index([productionDate])
+  @@map("production_batches")
+}
+
+model ProductionBatchItem {
+  id           Int             @id @default(autoincrement())
+  batchId      Int
+  materialId   Int
+  quantityUsed Decimal         @db.Decimal(10, 3) // এই উৎপাদনে কাঁচামাল কতটুকু লাগলো
+  unit         String          @default("kg") // kg, gm, ml, piece
+  unitCost     Decimal         @db.Decimal(10, 2) // উপাদানের প্রতি একক খরচ
+  totalCost    Decimal         @db.Decimal(12, 2) // মোট খরচ (৳)
+  createdAt    DateTime        @default(now())
+
+  batch        ProductionBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  material     RawMaterial     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+  @@index([materialId])
+  @@map("production_batch_items")
 }
 
 
