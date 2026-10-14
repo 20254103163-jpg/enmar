@@ -133,6 +133,14 @@
       "namedRegex": "^/api/admin/customers/(?<nxtPid>[^/]+?)(?:/)?$"
     },
     {
+      "page": "/api/admin/materials/[id]",
+      "regex": "^/api/admin/materials/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/materials/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
       "page": "/api/admin/orders/[id]",
       "regex": "^/api/admin/orders/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -367,6 +375,12 @@
       "regex": "^/admin/loyalty(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/admin/loyalty(?:/)?$"
+    },
+    {
+      "page": "/admin/materials",
+      "regex": "^/admin/materials(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/materials(?:/)?$"
     },
     {
       "page": "/admin/notifications",

@@ -749,7 +749,72 @@ INSERT INTO `feature_flags` (`key`, `name`, `description`, `category`, `isEnable
 ('whatsapp_floating_button', 'WhatsApp Floating Chat', 'Floating WhatsApp support button on storefront', 'storefront', 1, NOW()),
 ('customer_ai_assistant', 'Customer AI Chatbot', 'AI chat widget for shoppers', 'ai', 1, NOW()),
 ('rider_live_gps', 'Rider GPS Tracking', 'Live courier location map feed on tracking page', 'logistics', 1, NOW()),
-('wellness_hub', 'Wellness & Nutrition Hub', 'Interactive BMI & Calorie Calculator', 'features', 1, NOW());
+-- --------------------------------------------------------
+-- Table structure for table `raw_materials`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `raw_materials` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(191) NOT NULL,
+  `code` VARCHAR(191) NULL UNIQUE,
+  `category` VARCHAR(191) NULL DEFAULT 'উপাদান',
+  `unit` VARCHAR(191) NOT NULL DEFAULT 'kg',
+  `currentStock` DECIMAL(10, 3) NOT NULL DEFAULT 0.000,
+  `unitCost` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  `totalPurchased` DECIMAL(10, 3) NOT NULL DEFAULT 0.000,
+  `totalSpent` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+  `supplier` VARCHAR(191) NULL,
+  `supplierPhone` VARCHAR(191) NULL,
+  `notes` TEXT NULL,
+  `isActive` TINYINT(1) NOT NULL DEFAULT 1,
+  `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  INDEX `raw_materials_isActive_idx` (`isActive`),
+  INDEX `raw_materials_category_idx` (`category`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for table `material_purchases`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `material_purchases` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `materialId` INT NOT NULL,
+  `purchaseDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `quantity` DECIMAL(10, 3) NOT NULL,
+  `unitPrice` DECIMAL(10, 2) NOT NULL,
+  `totalCost` DECIMAL(12, 2) NOT NULL,
+  `supplierName` VARCHAR(191) NULL,
+  `invoiceNumber` VARCHAR(191) NULL,
+  `batchNumber` VARCHAR(191) NULL,
+  `notes` TEXT NULL,
+  `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  INDEX `material_purchases_materialId_idx` (`materialId`),
+  INDEX `material_purchases_purchaseDate_idx` (`purchaseDate`),
+  CONSTRAINT `material_purchases_materialId_fkey` FOREIGN KEY (`materialId`) REFERENCES `raw_materials` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for table `product_ingredients`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `product_ingredients` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `productId` INT NOT NULL,
+  `materialId` INT NOT NULL,
+  `quantityNeeded` DECIMAL(10, 3) NOT NULL,
+  `unit` VARCHAR(191) NOT NULL DEFAULT 'kg',
+  `estimatedCost` DECIMAL(10, 2) NULL DEFAULT 0.00,
+  `notes` TEXT NULL,
+  `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `product_ingredients_productId_materialId_key` (`productId`, `materialId`),
+  INDEX `product_ingredients_productId_idx` (`productId`),
+  INDEX `product_ingredients_materialId_idx` (`materialId`),
+  CONSTRAINT `product_ingredients_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `product_ingredients_materialId_fkey` FOREIGN KEY (`materialId`) REFERENCES `raw_materials` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
+

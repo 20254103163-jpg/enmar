@@ -32,6 +32,7 @@ import {
   Calendar,
   Utensils,
   Star,
+  Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -117,6 +118,7 @@ export default function AdminSidebar({ mobileOpen, onCloseMobile }: SidebarProps
     { label: "Products Catalog", href: "/admin/products", icon: Package, module: "products" },
     { label: "Categories", href: "/admin/categories", icon: Layers, module: "products" },
     { label: "Inventory Stock", href: "/admin/inventory", icon: Boxes, module: "inventory" },
+    { label: "Raw Materials & Costing", href: "/admin/materials", icon: Scale, module: "products" },
     { label: "Delivery Fleet", href: "/admin/delivery", icon: Bike, module: "orders" },
     { label: "Subscriptions", href: "/admin/subscriptions", icon: Calendar, module: "orders" },
     { label: "Returns & Refunds", href: "/admin/returns", icon: RotateCcw, module: "returns" },

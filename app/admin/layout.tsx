@@ -49,7 +49,7 @@ export default function AdminLayout({
     if (path.startsWith("/admin/staff") || path.startsWith("/admin/features") || path.startsWith("/admin/backup") || path.startsWith("/admin/bin")) {
       return { module: "staff", superAdminOnly: true };
     }
-    if (path.startsWith("/admin/products") || path.startsWith("/admin/categories") || path.startsWith("/admin/recipes")) return { module: "products" };
+    if (path.startsWith("/admin/products") || path.startsWith("/admin/categories") || path.startsWith("/admin/recipes") || path.startsWith("/admin/materials")) return { module: "products" };
     if (path.startsWith("/admin/orders") || path.startsWith("/admin/delivery") || path.startsWith("/admin/subscriptions")) return { module: "orders" };
     if (path.startsWith("/admin/returns")) return { module: "returns" };
     if (path.startsWith("/admin/customers") || path.startsWith("/admin/reviews")) return { module: "customers" };

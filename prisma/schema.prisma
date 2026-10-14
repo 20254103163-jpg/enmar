@@ -196,6 +196,7 @@ model Product {
   orderItems        OrderItem[]
   reviews           Review[]
   wishlists         WishlistItem[]
+  ingredients       ProductIngredient[]
 
   @@index([slug])
   @@index([categoryId])
@@ -797,4 +798,74 @@ model CustomerSubscription {
   @@index([subscriptionNumber])
   @@map("customer_subscriptions")
 }
+
+// ─────────────────────────────────────────────────────────────
+// 19. RAW MATERIALS, INGREDIENTS & PRODUCTION COSTING (BOM)
+// ─────────────────────────────────────────────────────────────
+
+model RawMaterial {
+  id              Int                 @id @default(autoincrement())
+  name            String              // কাঁচামাল / উপাদানের নাম
+  code            String?             @unique // বারকোড বা ইউনিক কোড (যেমন: RM-MUSTARD-01)
+  category        String?             @default("উপাদান") // বীজ ও শস্য, তেল ও মশলা, প্যাকেজিং ও বোতল, ড্রাই ফ্রুটস ইত্যাদি
+  unit            String              @default("kg") // kg, gm, L, ml, piece, packet, drum
+  currentStock    Decimal             @default(0) @db.Decimal(10, 3) // বর্তমান মজুদ পরিমাণ
+  unitCost        Decimal             @default(0) @db.Decimal(10, 2) // প্রতি ইউনিটের ক্রয়মূল্য (৳)
+  totalPurchased  Decimal             @default(0) @db.Decimal(10, 3) // মোট কতটুকু কেনা হয়েছে
+  totalSpent      Decimal             @default(0) @db.Decimal(12, 2) // মোট কত টাকা খরচ হয়েছে
+  supplier        String?             // প্রধান সরবরাহকারী / কৃষক / মিল
+  supplierPhone   String?             // সরবরাহকারীর মোবাইল নম্বর
+  notes           String?             @db.Text
+  isActive        Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  purchases          MaterialPurchase[]
+  productIngredients ProductIngredient[]
+
+  @@index([isActive])
+  @@index([category])
+  @@map("raw_materials")
+}
+
+model MaterialPurchase {
+  id            Int         @id @default(autoincrement())
+  materialId    Int
+  purchaseDate  DateTime    @default(now()) // ক্রয়ের তারিখ
+  quantity      Decimal     @db.Decimal(10, 3) // ক্রয়ের পরিমাণ
+  unitPrice     Decimal     @db.Decimal(10, 2) // প্রতি একক মূল্য (৳)
+  totalCost     Decimal     @db.Decimal(12, 2) // মোট কত টাকা দিয়ে কেনা হয়েছে (৳)
+  supplierName  String?     // সরবরাহকারীর নাম
+  invoiceNumber String?     // ক্যাশমেমো / বিল / চালান নং
+  batchNumber   String?     // লট বা ব্যাচ নং
+  notes         String?     @db.Text
+  createdAt     DateTime    @default(now())
+
+  material      RawMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@index([materialId])
+  @@index([purchaseDate])
+  @@map("material_purchases")
+}
+
+model ProductIngredient {
+  id             Int         @id @default(autoincrement())
+  productId      Int         // কোন প্রোডাক্টে ব্যবহৃত হচ্ছে
+  materialId     Int         // কোন কাঁচামাল ব্যবহার হচ্ছে
+  quantityNeeded Decimal     @db.Decimal(10, 3) // ১ ইউনিট প্রোডাক্ট বানাতে এই কাঁচামাল কতটুকু লাগে
+  unit           String      @default("kg") // kg, gm, ml, piece
+  estimatedCost  Decimal?    @default(0) @db.Decimal(10, 2) // প্রতি ইউনিটে এই কাঁচামালের আনুমানিক খরচ (৳)
+  notes          String?     @db.Text // স্পেসিফিকেশন / নোট
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  product        Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  material       RawMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, materialId])
+  @@index([productId])
+  @@index([materialId])
+  @@map("product_ingredients")
+}
+
 
